@@ -1,0 +1,1819 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Generador de Presupuestos de Obra</title>
+  <style>
+    :root {
+      --bg: #f5f7f6;
+      --surface: #ffffff;
+      --surface-2: #eef3f1;
+      --ink: #17201b;
+      --muted: #66736c;
+      --line: #d9e1dd;
+      --brand: #176b4d;
+      --brand-2: #0f5139;
+      --blue: #245a85;
+      --amber: #b7791f;
+      --danger: #b42318;
+      --success: #0f7a4a;
+      --shadow: 0 12px 32px rgba(23, 32, 27, 0.08);
+      --radius: 8px;
+    }
+
+    /* Base visual y controles generales */
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.45;
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+      font: inherit;
+    }
+
+    button {
+      border: 0;
+      cursor: pointer;
+    }
+
+    .app-shell {
+      min-height: 100vh;
+    }
+
+    /* Encabezado fijo y navegación principal */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(12px);
+    }
+
+    .topbar-inner,
+    .page {
+      width: min(1240px, calc(100% - 32px));
+      margin: 0 auto;
+    }
+
+    .topbar-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      min-height: 68px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+      font-weight: 800;
+    }
+
+    .brand-mark {
+      display: grid;
+      flex: 0 0 38px;
+      width: 38px;
+      height: 38px;
+      place-items: center;
+      border-radius: 8px;
+      background: var(--brand);
+      color: #fff;
+      font-size: 20px;
+      font-weight: 900;
+    }
+
+    .brand span:last-child {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .topbar-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    .page {
+      padding: 28px 0 56px;
+    }
+
+    /* Pantalla principal tipo dashboard */
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr);
+      gap: 20px;
+      align-items: stretch;
+      margin-bottom: 20px;
+    }
+
+    .hero-panel {
+      padding: 24px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: linear-gradient(135deg, #ffffff 0%, #edf5f0 100%);
+      box-shadow: var(--shadow);
+    }
+
+    .eyebrow {
+      margin: 0 0 8px;
+      color: var(--brand);
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0;
+      text-transform: uppercase;
+    }
+
+    h1,
+    h2,
+    h3 {
+      margin: 0;
+      letter-spacing: 0;
+      line-height: 1.15;
+    }
+
+    h1 {
+      max-width: 760px;
+      font-size: clamp(2rem, 4vw, 3.4rem);
+    }
+
+    .hero-copy {
+      max-width: 760px;
+      margin: 14px 0 0;
+      color: var(--muted);
+      font-size: 1.03rem;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 22px;
+    }
+
+    .stats-card {
+      display: grid;
+      gap: 14px;
+      padding: 20px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+
+    .stat-line {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--line);
+      color: var(--muted);
+    }
+
+    .stat-line:last-child {
+      padding-bottom: 0;
+      border-bottom: 0;
+    }
+
+    .stat-line strong {
+      color: var(--ink);
+      font-size: 1.08rem;
+      text-align: right;
+    }
+
+    /* Secciones, formularios y tarjetas de trabajo */
+    .section {
+      margin-top: 20px;
+      padding: 20px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+
+    .section-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    .section-header p {
+      max-width: 760px;
+      margin: 6px 0 0;
+      color: var(--muted);
+    }
+
+    .toolbar,
+    .screen-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 42px;
+      padding: 10px 14px;
+      border-radius: 8px;
+      background: var(--surface-2);
+      color: var(--ink);
+      font-weight: 800;
+      text-decoration: none;
+      transition: transform 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 18px rgba(23, 32, 27, 0.12);
+    }
+
+    .btn-primary {
+      background: var(--brand);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: var(--brand-2);
+    }
+
+    .btn-blue {
+      background: var(--blue);
+      color: #fff;
+    }
+
+    .btn-warning {
+      background: #fff4df;
+      color: #7a4a0b;
+    }
+
+    .btn-danger {
+      background: #fff1ef;
+      color: var(--danger);
+    }
+
+    .btn-ghost {
+      border: 1px solid var(--line);
+      background: #fff;
+    }
+
+    .icon-btn {
+      width: 40px;
+      min-width: 40px;
+      height: 40px;
+      padding: 0;
+      border-radius: 8px;
+    }
+
+    .warning-banner {
+      display: none;
+      margin-bottom: 16px;
+      padding: 12px 14px;
+      border: 1px solid #f4c27a;
+      border-radius: 8px;
+      background: #fff7e8;
+      color: #7a4a0b;
+      font-weight: 700;
+    }
+
+    .warning-banner.is-visible {
+      display: block;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .field {
+      display: grid;
+      gap: 7px;
+    }
+
+    .field.full {
+      grid-column: 1 / -1;
+    }
+
+    label {
+      color: #34443b;
+      font-size: 0.9rem;
+      font-weight: 800;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      min-height: 42px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--ink);
+      padding: 10px 11px;
+      outline: none;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+    }
+
+    textarea {
+      min-height: 92px;
+      resize: vertical;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: var(--brand);
+      box-shadow: 0 0 0 3px rgba(23, 107, 77, 0.16);
+    }
+
+    .is-invalid {
+      border-color: var(--amber);
+      background: #fffaf1;
+    }
+
+    .mini-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 16px;
+    }
+
+    /* Tablas editables y herramientas de búsqueda */
+    .table-tools {
+      display: grid;
+      grid-template-columns: minmax(220px, 1fr) minmax(180px, 260px) auto;
+      gap: 12px;
+      align-items: end;
+      margin-bottom: 12px;
+    }
+
+    .table-wrap {
+      width: 100%;
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 880px;
+    }
+
+    th {
+      background: #eef3f1;
+      color: #34443b;
+      font-size: 0.82rem;
+      text-align: left;
+      text-transform: uppercase;
+    }
+
+    th,
+    td {
+      padding: 10px;
+      border-bottom: 1px solid var(--line);
+      vertical-align: middle;
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    td input,
+    td select {
+      min-height: 38px;
+      padding: 8px 9px;
+    }
+
+    .num {
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    .empty-row {
+      padding: 22px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    /* Resumen financiero */
+    .financial-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(320px, 420px);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .summary-list {
+      display: grid;
+      gap: 10px;
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfcfb;
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      color: var(--muted);
+    }
+
+    .summary-row strong {
+      color: var(--ink);
+      text-align: right;
+    }
+
+    .summary-row.total {
+      margin-top: 8px;
+      padding-top: 14px;
+      border-top: 2px solid var(--line);
+      color: var(--ink);
+      font-size: 1.22rem;
+      font-weight: 900;
+    }
+
+    .summary-row.total strong {
+      color: var(--brand);
+      font-size: 1.35rem;
+    }
+
+    .saved-list,
+    .database-grid {
+      display: grid;
+      gap: 12px;
+    }
+
+    .saved-card {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 12px;
+      align-items: center;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    .saved-card h3 {
+      font-size: 1rem;
+    }
+
+    .saved-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 16px;
+      margin-top: 7px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .database-tools {
+      display: grid;
+      grid-template-columns: minmax(220px, 1fr) minmax(180px, 260px);
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      min-height: 28px;
+      padding: 4px 9px;
+      border-radius: 999px;
+      background: var(--surface-2);
+      color: #34443b;
+      font-size: 0.82rem;
+      font-weight: 800;
+    }
+
+    /* Mensajes visuales y modales, sin alert/prompt/confirm */
+    .toast {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      z-index: 50;
+      display: none;
+      max-width: min(420px, calc(100vw - 36px));
+      padding: 13px 15px;
+      border: 1px solid #bddcca;
+      border-radius: 8px;
+      background: #effaf4;
+      color: #134d33;
+      box-shadow: var(--shadow);
+      font-weight: 800;
+    }
+
+    .toast.is-visible {
+      display: block;
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 60;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+      background: rgba(23, 32, 27, 0.42);
+    }
+
+    .modal-backdrop.is-visible {
+      display: flex;
+    }
+
+    .modal {
+      width: min(460px, 100%);
+      padding: 18px;
+      border-radius: 8px;
+      background: #fff;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.22);
+    }
+
+    .modal p {
+      margin: 10px 0 18px;
+      color: var(--muted);
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .print-document {
+      display: none;
+    }
+
+    @media (max-width: 980px) {
+      .hero,
+      .financial-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .form-grid,
+      .mini-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .table-tools {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .table-tools .btn {
+        grid-column: 1 / -1;
+      }
+    }
+
+    @media (max-width: 700px) {
+      .topbar-inner,
+      .page {
+        width: min(100% - 22px, 1240px);
+      }
+
+      .topbar-inner,
+      .section-header,
+      .saved-card {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .topbar-inner {
+        padding: 12px 0;
+      }
+
+      .topbar-actions,
+      .screen-actions,
+      .toolbar,
+      .hero-actions,
+      .saved-card {
+        display: grid;
+        grid-template-columns: 1fr;
+      }
+
+      .section,
+      .hero-panel,
+      .stats-card {
+        padding: 16px;
+      }
+
+      .form-grid,
+      .mini-grid,
+      .table-tools,
+      .database-tools {
+        grid-template-columns: 1fr;
+      }
+
+      .btn {
+        width: 100%;
+      }
+
+      .summary-row.total {
+        font-size: 1.06rem;
+      }
+    }
+
+    /* Documento formal para imprimir o exportar a PDF */
+    @media print {
+      @page {
+        margin: 18mm;
+      }
+
+      body {
+        background: #fff;
+        color: #111;
+      }
+
+      .app-shell,
+      .toast,
+      .modal-backdrop {
+        display: none !important;
+      }
+
+      .print-document {
+        display: block;
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 11pt;
+      }
+
+      .print-header {
+        display: flex;
+        justify-content: space-between;
+        gap: 18px;
+        padding-bottom: 14px;
+        border-bottom: 3px solid #111;
+      }
+
+      .print-header h1 {
+        font-size: 22pt;
+      }
+
+      .print-meta,
+      .print-summary {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px 18px;
+        margin-top: 18px;
+      }
+
+      .print-block {
+        margin-top: 20px;
+      }
+
+      .print-document table {
+        min-width: 0;
+        font-size: 9.5pt;
+      }
+
+      .print-document th {
+        background: #e8e8e8 !important;
+        color: #111;
+      }
+
+      .print-document th,
+      .print-document td {
+        padding: 7px;
+        border: 1px solid #999;
+      }
+
+      .print-total {
+        margin-top: 14px;
+        padding: 12px;
+        border: 2px solid #111;
+        text-align: right;
+        font-size: 16pt;
+        font-weight: 900;
+      }
+
+      .signature-line {
+        width: 260px;
+        margin-top: 52px;
+        padding-top: 8px;
+        border-top: 1px solid #111;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="topbar-inner">
+        <div class="brand" aria-label="Generador de Presupuestos de Obra">
+          <span class="brand-mark">P</span>
+          <span>Presupuestos de Obra</span>
+        </div>
+        <nav class="topbar-actions" aria-label="Acciones principales">
+          <button class="btn btn-primary" type="button" id="topNewBudget">Nuevo presupuesto</button>
+          <button class="btn btn-ghost" type="button" data-scroll="#savedSection">Guardados</button>
+          <button class="btn btn-ghost" type="button" data-scroll="#databaseSection">Base de precios</button>
+        </nav>
+      </div>
+    </header>
+
+    <main class="page">
+      <section class="hero" id="home">
+        <div class="hero-panel">
+          <p class="eyebrow">Dashboard de costos de construcción</p>
+          <h1>Generador de Presupuestos de Obra</h1>
+          <p class="hero-copy">
+            Crea presupuestos de construcción con partidas editables, precios referenciales,
+            cálculos automáticos, guardado local y una vista formal lista para imprimir o exportar a PDF.
+          </p>
+          <div class="hero-actions">
+            <button class="btn btn-primary" type="button" id="heroNewBudget">Nuevo presupuesto</button>
+            <button class="btn btn-blue" type="button" data-scroll="#savedSection">Ver presupuestos guardados</button>
+            <button class="btn btn-ghost" type="button" data-scroll="#databaseSection">Base de precios</button>
+          </div>
+        </div>
+
+        <aside class="stats-card" aria-label="Resumen del presupuesto actual">
+          <div class="stat-line">
+            <span>Presupuesto</span>
+            <strong id="statBudgetNumber">-</strong>
+          </div>
+          <div class="stat-line">
+            <span>Partidas</span>
+            <strong id="statItemsCount">0</strong>
+          </div>
+          <div class="stat-line">
+            <span>Costo directo</span>
+            <strong id="statDirectCost">$0</strong>
+          </div>
+          <div class="stat-line">
+            <span>Total final</span>
+            <strong id="statFinalTotal">$0</strong>
+          </div>
+        </aside>
+      </section>
+
+      <section class="section" id="budgetSection">
+        <div class="section-header">
+          <div>
+            <h2>Datos generales del presupuesto</h2>
+            <p>Completa la información del cliente y del proyecto. La fecha y el número se generan automáticamente, pero puedes editarlos.</p>
+          </div>
+          <div class="screen-actions">
+            <button class="btn btn-primary" type="button" id="saveBudgetBtn">Guardar presupuesto</button>
+            <button class="btn btn-warning" type="button" id="clearBudgetBtn">Limpiar presupuesto</button>
+          </div>
+        </div>
+
+        <div class="warning-banner" id="projectWarning">Falta el nombre del proyecto. Completa este dato para guardar un presupuesto identificable.</div>
+
+        <form class="form-grid" id="budgetForm">
+          <div class="field">
+            <label for="clientName">Nombre del cliente</label>
+            <input id="clientName" type="text" autocomplete="off" />
+          </div>
+          <div class="field">
+            <label for="projectName">Nombre del proyecto</label>
+            <input id="projectName" type="text" autocomplete="off" />
+          </div>
+          <div class="field">
+            <label for="location">Ubicación</label>
+            <input id="location" type="text" autocomplete="off" />
+          </div>
+          <div class="field">
+            <label for="budgetDate">Fecha</label>
+            <input id="budgetDate" type="date" />
+          </div>
+          <div class="field">
+            <label for="budgetNumber">Número de presupuesto</label>
+            <input id="budgetNumber" type="text" autocomplete="off" />
+          </div>
+          <div class="field full">
+            <label for="observations">Observaciones generales</label>
+            <textarea id="observations" placeholder="Condiciones de pago, alcance, exclusiones u observaciones técnicas."></textarea>
+          </div>
+        </form>
+      </section>
+
+      <section class="section" id="itemsSection">
+        <div class="section-header">
+          <div>
+            <h2>Partidas del presupuesto</h2>
+            <p>Agrega partidas manualmente o desde la base de precios. Los subtotales se recalculan con cada cambio.</p>
+          </div>
+          <div class="toolbar">
+            <button class="btn btn-primary" type="button" id="addItemBtn">Agregar partida</button>
+            <button class="btn btn-ghost" type="button" data-scroll="#databaseSection">Agregar partida desde base de precios</button>
+          </div>
+        </div>
+
+        <div class="table-tools">
+          <div class="field">
+            <label for="itemSearch">Buscar partidas</label>
+            <input id="itemSearch" type="search" placeholder="Buscar por descripción, categoría o unidad" />
+          </div>
+          <div class="field">
+            <label for="itemCategoryFilter">Filtrar por categoría</label>
+            <select id="itemCategoryFilter"></select>
+          </div>
+          <span class="badge" id="visibleItemsLabel">0 partidas</span>
+        </div>
+
+        <div class="table-wrap">
+          <table aria-label="Partidas del presupuesto">
+            <thead>
+              <tr>
+                <th style="width: 70px;">Ítem</th>
+                <th style="width: 180px;">Categoría</th>
+                <th>Descripción</th>
+                <th style="width: 110px;">Unidad</th>
+                <th style="width: 120px;">Cantidad</th>
+                <th style="width: 150px;">Precio unitario</th>
+                <th style="width: 150px;">Subtotal</th>
+                <th style="width: 80px;">Eliminar</th>
+              </tr>
+            </thead>
+            <tbody id="itemsBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="section" id="financialSection">
+        <div class="section-header">
+          <div>
+            <h2>Resumen financiero</h2>
+            <p>Define gastos generales, utilidad, descuento e IVA. El IVA viene con 19% por defecto.</p>
+          </div>
+          <div class="toolbar">
+            <button class="btn btn-ghost" type="button" id="copySummaryBtn">Copiar resumen</button>
+            <button class="btn btn-ghost" type="button" id="exportCsvBtn">Exportar CSV</button>
+            <button class="btn btn-blue" type="button" id="printBtn">Imprimir presupuesto</button>
+            <button class="btn btn-primary" type="button" id="pdfBtn">Exportar a PDF</button>
+          </div>
+        </div>
+
+        <div class="financial-grid">
+          <div class="mini-grid">
+            <div class="field">
+              <label for="generalExpensesPercent">Gastos generales %</label>
+              <input id="generalExpensesPercent" type="number" min="0" step="0.01" />
+            </div>
+            <div class="field">
+              <label for="profitPercent">Utilidad %</label>
+              <input id="profitPercent" type="number" min="0" step="0.01" />
+            </div>
+            <div class="field">
+              <label for="discount">Descuento</label>
+              <input id="discount" type="number" min="0" step="1" />
+            </div>
+            <div class="field">
+              <label for="ivaPercent">IVA %</label>
+              <input id="ivaPercent" type="number" min="0" step="0.01" />
+            </div>
+          </div>
+
+          <div class="summary-list" aria-live="polite">
+            <div class="summary-row"><span>Costo directo</span><strong id="directCostValue">$0</strong></div>
+            <div class="summary-row"><span>Gastos generales</span><strong id="generalExpensesValue">$0</strong></div>
+            <div class="summary-row"><span>Utilidad</span><strong id="profitValue">$0</strong></div>
+            <div class="summary-row"><span>Descuento</span><strong id="discountValue">$0</strong></div>
+            <div class="summary-row"><span>Subtotal neto</span><strong id="netSubtotalValue">$0</strong></div>
+            <div class="summary-row"><span>IVA</span><strong id="ivaValue">$0</strong></div>
+            <div class="summary-row total"><span>Total final</span><strong id="finalTotalValue">$0</strong></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="savedSection">
+        <div class="section-header">
+          <div>
+            <h2>Presupuestos guardados</h2>
+            <p>Carga, duplica o elimina presupuestos almacenados en este navegador mediante localStorage.</p>
+          </div>
+          <button class="btn btn-ghost" type="button" id="refreshSavedBtn">Actualizar lista</button>
+        </div>
+        <div class="saved-list" id="savedList"></div>
+      </section>
+
+      <section class="section" id="databaseSection">
+        <div class="section-header">
+          <div>
+            <h2>Base de precios</h2>
+            <p>Precios referenciales editables. Selecciona una partida para agregarla al presupuesto actual.</p>
+          </div>
+          <button class="btn btn-ghost" type="button" id="resetDatabaseBtn">Restaurar base inicial</button>
+        </div>
+
+        <div class="database-tools">
+          <div class="field">
+            <label for="databaseSearch">Buscador de partidas</label>
+            <input id="databaseSearch" type="search" placeholder="Buscar hormigón, pintura, excavación..." />
+          </div>
+          <div class="field">
+            <label for="databaseCategoryFilter">Categoría</label>
+            <select id="databaseCategoryFilter"></select>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table aria-label="Base de precios">
+            <thead>
+              <tr>
+                <th style="width: 190px;">Categoría</th>
+                <th>Descripción</th>
+                <th style="width: 110px;">Unidad</th>
+                <th style="width: 170px;">Precio unitario</th>
+                <th style="width: 120px;">Agregar</th>
+              </tr>
+            </thead>
+            <tbody id="databaseBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <section class="print-document" id="printDocument" aria-label="Vista imprimible"></section>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <div class="modal-backdrop" id="modalBackdrop" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal">
+      <h2 id="modalTitle">Confirmar acción</h2>
+      <p id="modalText">Esta acción modificará los datos del presupuesto.</p>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" type="button" id="modalCancel">Cancelar</button>
+        <button class="btn btn-danger" type="button" id="modalConfirm">Continuar</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Datos base del sistema.
+    const CATEGORIES = [
+      "Obras preliminares",
+      "Excavaciones",
+      "Hormigón",
+      "Enfierradura",
+      "Moldaje",
+      "Albañilería",
+      "Terminaciones",
+      "Instalaciones",
+      "Pintura",
+      "Aseo y entrega",
+      "Otros"
+    ];
+
+    const STORAGE_KEYS = {
+      budgets: "obraBudgets:v1",
+      priceDatabase: "obraPriceDatabase:v1",
+      sequence: "obraBudgetSequence:v1"
+    };
+
+    const DEFAULT_PRICE_DATABASE = [
+      { categoria: "Obras preliminares", descripcion: "Instalación de faena", unidad: "gl", precioUnitario: 350000 },
+      { categoria: "Obras preliminares", descripcion: "Trazado y niveles", unidad: "m2", precioUnitario: 1800 },
+      { categoria: "Obras preliminares", descripcion: "Cierre provisorio de obra", unidad: "ml", precioUnitario: 18500 },
+      { categoria: "Excavaciones", descripcion: "Excavación manual", unidad: "m3", precioUnitario: 18000 },
+      { categoria: "Excavaciones", descripcion: "Excavación con maquinaria", unidad: "m3", precioUnitario: 9500 },
+      { categoria: "Excavaciones", descripcion: "Retiro de escombros", unidad: "m3", precioUnitario: 25000 },
+      { categoria: "Hormigón", descripcion: "Hormigón G25 instalado", unidad: "m3", precioUnitario: 135000 },
+      { categoria: "Hormigón", descripcion: "Radier de hormigón", unidad: "m2", precioUnitario: 32000 },
+      { categoria: "Hormigón", descripcion: "Sobrecimiento de hormigón", unidad: "ml", precioUnitario: 42000 },
+      { categoria: "Enfierradura", descripcion: "Enfierradura instalada", unidad: "kg", precioUnitario: 1450 },
+      { categoria: "Enfierradura", descripcion: "Malla acma instalada", unidad: "m2", precioUnitario: 6200 },
+      { categoria: "Moldaje", descripcion: "Moldaje de muro", unidad: "m2", precioUnitario: 28000 },
+      { categoria: "Moldaje", descripcion: "Moldaje de losa", unidad: "m2", precioUnitario: 32000 },
+      { categoria: "Albañilería", descripcion: "Muro de ladrillo fiscal", unidad: "m2", precioUnitario: 38000 },
+      { categoria: "Albañilería", descripcion: "Muro de bloque de hormigón", unidad: "m2", precioUnitario: 34000 },
+      { categoria: "Terminaciones", descripcion: "Cerámica instalada", unidad: "m2", precioUnitario: 22000 },
+      { categoria: "Terminaciones", descripcion: "Porcelanato instalado", unidad: "m2", precioUnitario: 31000 },
+      { categoria: "Terminaciones", descripcion: "Piso flotante instalado", unidad: "m2", precioUnitario: 19000 },
+      { categoria: "Terminaciones", descripcion: "Cielo falso yeso cartón", unidad: "m2", precioUnitario: 24000 },
+      { categoria: "Terminaciones", descripcion: "Tabique yeso cartón", unidad: "m2", precioUnitario: 28000 },
+      { categoria: "Instalaciones", descripcion: "Punto eléctrico básico", unidad: "un", precioUnitario: 32000 },
+      { categoria: "Instalaciones", descripcion: "Punto de enchufe", unidad: "un", precioUnitario: 28000 },
+      { categoria: "Instalaciones", descripcion: "Punto de agua potable", unidad: "un", precioUnitario: 42000 },
+      { categoria: "Instalaciones", descripcion: "Punto de alcantarillado", unidad: "un", precioUnitario: 52000 },
+      { categoria: "Instalaciones", descripcion: "Artefacto sanitario instalado", unidad: "un", precioUnitario: 85000 },
+      { categoria: "Pintura", descripcion: "Pintura interior", unidad: "m2", precioUnitario: 4500 },
+      { categoria: "Pintura", descripcion: "Pintura exterior", unidad: "m2", precioUnitario: 6200 },
+      { categoria: "Pintura", descripcion: "Esmalte en puertas", unidad: "m2", precioUnitario: 7800 },
+      { categoria: "Aseo y entrega", descripcion: "Aseo final de obra", unidad: "m2", precioUnitario: 1800 },
+      { categoria: "Aseo y entrega", descripcion: "Entrega y retiro de protecciones", unidad: "gl", precioUnitario: 120000 }
+    ];
+
+    // Estado principal de la aplicación.
+    const refs = {};
+    let currentBudget = createEmptyBudget();
+    let priceDatabase = loadPriceDatabase();
+    let modalAction = null;
+    let toastTimer = null;
+
+    // Inicio y conexión de eventos.
+    document.addEventListener("DOMContentLoaded", initApp);
+
+    function initApp() {
+      bindRefs();
+      populateCategorySelects();
+      bindEvents();
+      addItem();
+      renderBudget();
+      renderPriceDatabase();
+      renderSavedBudgets();
+    }
+
+    function bindRefs() {
+      [
+        "statBudgetNumber", "statItemsCount", "statDirectCost", "statFinalTotal",
+        "clientName", "projectName", "location", "budgetDate", "budgetNumber", "observations",
+        "projectWarning", "itemsBody", "itemSearch", "itemCategoryFilter", "visibleItemsLabel",
+        "generalExpensesPercent", "profitPercent", "discount", "ivaPercent",
+        "directCostValue", "generalExpensesValue", "profitValue", "discountValue",
+        "netSubtotalValue", "ivaValue", "finalTotalValue", "savedList",
+        "databaseSearch", "databaseCategoryFilter", "databaseBody", "printDocument",
+        "toast", "modalBackdrop", "modalTitle", "modalText", "modalCancel", "modalConfirm"
+      ].forEach((id) => {
+        refs[id] = document.getElementById(id);
+      });
+    }
+
+    function bindEvents() {
+      document.querySelectorAll("[data-scroll]").forEach((button) => {
+        button.addEventListener("click", () => scrollToSection(button.dataset.scroll));
+      });
+
+      document.getElementById("topNewBudget").addEventListener("click", newBudget);
+      document.getElementById("heroNewBudget").addEventListener("click", newBudget);
+      document.getElementById("saveBudgetBtn").addEventListener("click", saveBudget);
+      document.getElementById("clearBudgetBtn").addEventListener("click", requestClearBudget);
+      document.getElementById("addItemBtn").addEventListener("click", () => addItem());
+      document.getElementById("copySummaryBtn").addEventListener("click", copySummaryToClipboard);
+      document.getElementById("exportCsvBtn").addEventListener("click", exportCSV);
+      document.getElementById("printBtn").addEventListener("click", printBudget);
+      document.getElementById("pdfBtn").addEventListener("click", printBudget);
+      document.getElementById("refreshSavedBtn").addEventListener("click", renderSavedBudgets);
+      document.getElementById("resetDatabaseBtn").addEventListener("click", requestResetDatabase);
+
+      ["clientName", "projectName", "location", "budgetDate", "budgetNumber", "observations"].forEach((id) => {
+        refs[id].addEventListener("input", (event) => {
+          const fieldMap = {
+            clientName: "clientName",
+            projectName: "projectName",
+            location: "location",
+            budgetDate: "date",
+            budgetNumber: "number",
+            observations: "observations"
+          };
+          currentBudget[fieldMap[id]] = event.target.value;
+          validateBudget();
+          renderPrintDocument();
+          renderDashboardStats();
+        });
+      });
+
+      ["generalExpensesPercent", "profitPercent", "discount", "ivaPercent"].forEach((id) => {
+        refs[id].addEventListener("input", (event) => {
+          event.target.value = cleanNonNegative(event.target.value);
+          currentBudget[id] = toNumber(event.target.value);
+          renderTotals();
+        });
+      });
+
+      refs.itemsBody.addEventListener("input", handleItemInput);
+      refs.itemsBody.addEventListener("change", handleItemInput);
+      refs.itemsBody.addEventListener("click", handleItemClick);
+      refs.itemSearch.addEventListener("input", renderBudgetItems);
+      refs.itemCategoryFilter.addEventListener("change", renderBudgetItems);
+
+      refs.databaseBody.addEventListener("input", handleDatabaseInput);
+      refs.databaseBody.addEventListener("click", handleDatabaseClick);
+      refs.databaseSearch.addEventListener("input", renderPriceDatabase);
+      refs.databaseCategoryFilter.addEventListener("change", renderPriceDatabase);
+
+      refs.savedList.addEventListener("click", handleSavedClick);
+      refs.modalCancel.addEventListener("click", closeModal);
+      refs.modalBackdrop.addEventListener("click", (event) => {
+        if (event.target === refs.modalBackdrop) closeModal();
+      });
+      refs.modalConfirm.addEventListener("click", () => {
+        if (typeof modalAction === "function") modalAction();
+        closeModal();
+      });
+    }
+
+    // Crea un presupuesto limpio con fecha y número automáticos.
+    function createEmptyBudget() {
+      return {
+        id: null,
+        clientName: "",
+        projectName: "",
+        location: "",
+        date: todayISO(),
+        number: nextBudgetNumber(),
+        observations: "",
+        items: [],
+        generalExpensesPercent: 10,
+        profitPercent: 15,
+        discount: 0,
+        ivaPercent: 19,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+    }
+
+    function todayISO() {
+      const today = new Date();
+      const localDate = new Date(today.getTime() - today.getTimezoneOffset() * 60000);
+      return localDate.toISOString().slice(0, 10);
+    }
+
+    function nextBudgetNumber() {
+      const year = new Date().getFullYear();
+      const key = `${STORAGE_KEYS.sequence}:${year}`;
+      const next = Number(localStorage.getItem(key) || "0") + 1;
+      localStorage.setItem(key, String(next));
+      return `P-${year}-${String(next).padStart(4, "0")}`;
+    }
+
+    function populateCategorySelects() {
+      const options = [`<option value="">Todas las categorías</option>`]
+        .concat(CATEGORIES.map((category) => `<option value="${escapeHTML(category)}">${escapeHTML(category)}</option>`))
+        .join("");
+      refs.itemCategoryFilter.innerHTML = options;
+      refs.databaseCategoryFilter.innerHTML = options;
+    }
+
+    // Renderiza el formulario, las partidas, los totales y la vista imprimible.
+    function renderBudget() {
+      refs.clientName.value = currentBudget.clientName;
+      refs.projectName.value = currentBudget.projectName;
+      refs.location.value = currentBudget.location;
+      refs.budgetDate.value = currentBudget.date;
+      refs.budgetNumber.value = currentBudget.number;
+      refs.observations.value = currentBudget.observations;
+      refs.generalExpensesPercent.value = currentBudget.generalExpensesPercent;
+      refs.profitPercent.value = currentBudget.profitPercent;
+      refs.discount.value = currentBudget.discount;
+      refs.ivaPercent.value = currentBudget.ivaPercent;
+      renderBudgetItems();
+      renderTotals();
+      validateBudget();
+    }
+
+    function renderBudgetItems() {
+      const visibleItems = getVisibleBudgetItems();
+      refs.visibleItemsLabel.textContent = `${visibleItems.length} de ${currentBudget.items.length} partidas`;
+
+      if (visibleItems.length === 0) {
+        refs.itemsBody.innerHTML = `<tr><td class="empty-row" colspan="8">No hay partidas para mostrar.</td></tr>`;
+        renderTotals();
+        return;
+      }
+
+      refs.itemsBody.innerHTML = visibleItems.map(({ item, index }) => {
+        const subtotal = toNumber(item.cantidad) * toNumber(item.precioUnitario);
+        return `
+          <tr>
+            <td><strong>${index + 1}</strong></td>
+            <td>
+              <select data-index="${index}" data-field="categoria">
+                ${CATEGORIES.map((category) => `<option value="${escapeHTML(category)}" ${item.categoria === category ? "selected" : ""}>${escapeHTML(category)}</option>`).join("")}
+              </select>
+            </td>
+            <td><input data-index="${index}" data-field="descripcion" type="text" value="${escapeAttribute(item.descripcion)}" placeholder="Descripción de la partida" /></td>
+            <td><input data-index="${index}" data-field="unidad" type="text" value="${escapeAttribute(item.unidad)}" placeholder="m2" /></td>
+            <td><input data-index="${index}" data-field="cantidad" type="number" min="0" step="0.01" value="${escapeAttribute(item.cantidad)}" /></td>
+            <td><input data-index="${index}" data-field="precioUnitario" type="number" min="0" step="1" value="${escapeAttribute(item.precioUnitario)}" /></td>
+            <td class="num" data-subtotal="${index}"><strong>${formatCurrency(subtotal)}</strong></td>
+            <td><button class="btn btn-danger icon-btn" type="button" data-remove-index="${index}" title="Eliminar partida" aria-label="Eliminar partida">×</button></td>
+          </tr>
+        `;
+      }).join("");
+
+      renderTotals();
+    }
+
+    function getVisibleBudgetItems() {
+      const term = normalizeText(refs.itemSearch.value);
+      const category = refs.itemCategoryFilter.value;
+
+      return currentBudget.items
+        .map((item, index) => ({ item, index }))
+        .filter(({ item }) => {
+          const matchesCategory = !category || item.categoria === category;
+          const searchable = normalizeText(`${item.categoria} ${item.descripcion} ${item.unidad}`);
+          return matchesCategory && (!term || searchable.includes(term));
+        });
+    }
+
+    // Agrega una partida manual o proveniente de la base de precios.
+    function addItem(item = {}) {
+      const normalizedItem = {
+        id: item.id || uniqueId(),
+        categoria: item.categoria || "Otros",
+        descripcion: item.descripcion || "",
+        unidad: item.unidad || "",
+        cantidad: toNumber(item.cantidad ?? 1),
+        precioUnitario: toNumber(item.precioUnitario ?? 0)
+      };
+      currentBudget.items.push(normalizedItem);
+      renderBudgetItems();
+      renderTotals();
+    }
+
+    function removeItem(index) {
+      currentBudget.items.splice(index, 1);
+      renderBudgetItems();
+      showToast("Partida eliminada.");
+    }
+
+    function handleItemInput(event) {
+      const target = event.target;
+      const index = Number(target.dataset.index);
+      const field = target.dataset.field;
+      if (!field || Number.isNaN(index) || !currentBudget.items[index]) return;
+
+      if (field === "cantidad" || field === "precioUnitario") {
+        target.value = cleanNonNegative(target.value);
+        currentBudget.items[index][field] = toNumber(target.value);
+        updateRowSubtotal(index);
+      } else {
+        currentBudget.items[index][field] = target.value;
+      }
+
+      renderTotals();
+    }
+
+    function handleItemClick(event) {
+      const removeIndex = event.target.dataset.removeIndex;
+      if (removeIndex === undefined) return;
+      removeItem(Number(removeIndex));
+    }
+
+    function updateRowSubtotal(index) {
+      const subtotalCell = refs.itemsBody.querySelector(`[data-subtotal="${index}"]`);
+      if (!subtotalCell) return;
+      const item = currentBudget.items[index];
+      const subtotal = toNumber(item.cantidad) * toNumber(item.precioUnitario);
+      subtotalCell.innerHTML = `<strong>${formatCurrency(subtotal)}</strong>`;
+    }
+
+    // Aplica las fórmulas solicitadas para costo directo, cargos, IVA y total.
+    function calculateTotals() {
+      const costoDirecto = currentBudget.items.reduce((sum, item) => {
+        return sum + toNumber(item.cantidad) * toNumber(item.precioUnitario);
+      }, 0);
+      const gastosGenerales = costoDirecto * (toNumber(currentBudget.generalExpensesPercent) / 100);
+      const utilidad = costoDirecto * (toNumber(currentBudget.profitPercent) / 100);
+      const descuento = Math.min(toNumber(currentBudget.discount), costoDirecto + gastosGenerales + utilidad);
+      const subtotalNeto = Math.max(0, costoDirecto + gastosGenerales + utilidad - descuento);
+      const iva = subtotalNeto * (toNumber(currentBudget.ivaPercent) / 100);
+      const totalFinal = subtotalNeto + iva;
+
+      return { costoDirecto, gastosGenerales, utilidad, descuento, subtotalNeto, iva, totalFinal };
+    }
+
+    function renderTotals() {
+      const totals = calculateTotals();
+      refs.directCostValue.textContent = formatCurrency(totals.costoDirecto);
+      refs.generalExpensesValue.textContent = formatCurrency(totals.gastosGenerales);
+      refs.profitValue.textContent = formatCurrency(totals.utilidad);
+      refs.discountValue.textContent = totals.descuento > 0 ? `-${formatCurrency(totals.descuento)}` : formatCurrency(0);
+      refs.netSubtotalValue.textContent = formatCurrency(totals.subtotalNeto);
+      refs.ivaValue.textContent = formatCurrency(totals.iva);
+      refs.finalTotalValue.textContent = formatCurrency(totals.totalFinal);
+      renderDashboardStats();
+      renderPrintDocument();
+    }
+
+    function renderDashboardStats() {
+      const totals = calculateTotals();
+      refs.statBudgetNumber.textContent = currentBudget.number || "-";
+      refs.statItemsCount.textContent = String(currentBudget.items.length);
+      refs.statDirectCost.textContent = formatCurrency(totals.costoDirecto);
+      refs.statFinalTotal.textContent = formatCurrency(totals.totalFinal);
+    }
+
+    function validateBudget() {
+      const missingProject = currentBudget.projectName.trim() === "";
+      refs.projectWarning.classList.toggle("is-visible", missingProject);
+      refs.projectName.classList.toggle("is-invalid", missingProject);
+      return !missingProject;
+    }
+
+    // Guarda, carga, elimina y duplica presupuestos usando localStorage.
+    function saveBudget() {
+      if (!validateBudget()) {
+        refs.projectName.focus();
+        showToast("Completa el nombre del proyecto antes de guardar.");
+        return;
+      }
+
+      const budgets = getSavedBudgets();
+      const now = new Date().toISOString();
+      const budgetToSave = {
+        ...clone(currentBudget),
+        id: currentBudget.id || uniqueId(),
+        updatedAt: now,
+        createdAt: currentBudget.createdAt || now
+      };
+
+      const existingIndex = budgets.findIndex((budget) => budget.id === budgetToSave.id);
+      if (existingIndex >= 0) {
+        budgets[existingIndex] = budgetToSave;
+      } else {
+        budgets.unshift(budgetToSave);
+      }
+
+      localStorage.setItem(STORAGE_KEYS.budgets, JSON.stringify(budgets));
+      currentBudget = clone(budgetToSave);
+      renderSavedBudgets();
+      renderBudget();
+      showToast("Presupuesto guardado en este navegador.");
+    }
+
+    function loadBudget(id) {
+      const budget = getSavedBudgets().find((item) => item.id === id);
+      if (!budget) {
+        showToast("No se encontró el presupuesto seleccionado.");
+        return;
+      }
+      currentBudget = clone(budget);
+      renderBudget();
+      scrollToSection("#budgetSection");
+      showToast("Presupuesto cargado.");
+    }
+
+    function deleteBudget(id) {
+      const nextBudgets = getSavedBudgets().filter((budget) => budget.id !== id);
+      localStorage.setItem(STORAGE_KEYS.budgets, JSON.stringify(nextBudgets));
+      if (currentBudget.id === id) currentBudget.id = null;
+      renderSavedBudgets();
+      showToast("Presupuesto eliminado.");
+    }
+
+    function duplicateBudget(id) {
+      const budget = getSavedBudgets().find((item) => item.id === id);
+      if (!budget) return;
+      currentBudget = {
+        ...clone(budget),
+        id: null,
+        number: nextBudgetNumber(),
+        date: todayISO(),
+        projectName: `${budget.projectName || "Presupuesto"} (copia)`,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      renderBudget();
+      scrollToSection("#budgetSection");
+      showToast("Copia creada. Revísala y guárdala cuando esté lista.");
+    }
+
+    function renderSavedBudgets() {
+      const budgets = getSavedBudgets();
+      if (budgets.length === 0) {
+        refs.savedList.innerHTML = `<div class="empty-row">Todavía no hay presupuestos guardados.</div>`;
+        return;
+      }
+
+      refs.savedList.innerHTML = budgets.map((budget) => {
+        const totals = calculateTotalsForBudget(budget);
+        return `
+          <article class="saved-card">
+            <div>
+              <h3>${escapeHTML(budget.projectName || "Proyecto sin nombre")}</h3>
+              <div class="saved-meta">
+                <span>${escapeHTML(budget.number || "-")}</span>
+                <span>${escapeHTML(budget.clientName || "Sin cliente")}</span>
+                <span>${formatDate(budget.date)}</span>
+                <strong>${formatCurrency(totals.totalFinal)}</strong>
+              </div>
+            </div>
+            <div class="toolbar">
+              <button class="btn btn-primary" type="button" data-load-id="${budget.id}">Cargar</button>
+              <button class="btn btn-ghost" type="button" data-duplicate-id="${budget.id}">Duplicar</button>
+              <button class="btn btn-danger" type="button" data-delete-id="${budget.id}">Eliminar</button>
+            </div>
+          </article>
+        `;
+      }).join("");
+    }
+
+    function handleSavedClick(event) {
+      const loadId = event.target.dataset.loadId;
+      const duplicateId = event.target.dataset.duplicateId;
+      const deleteId = event.target.dataset.deleteId;
+
+      if (loadId) loadBudget(loadId);
+      if (duplicateId) duplicateBudget(duplicateId);
+      if (deleteId) {
+        openModal(
+          "Eliminar presupuesto",
+          "El presupuesto se borrará de localStorage en este navegador.",
+          "Eliminar",
+          () => deleteBudget(deleteId)
+        );
+      }
+    }
+
+    // Renderiza la base referencial de precios y permite editar sus valores.
+    function renderPriceDatabase() {
+      const term = normalizeText(refs.databaseSearch.value);
+      const category = refs.databaseCategoryFilter.value;
+      const visibleRows = priceDatabase
+        .map((item, index) => ({ item, index }))
+        .filter(({ item }) => {
+          const matchesCategory = !category || item.categoria === category;
+          const searchable = normalizeText(`${item.categoria} ${item.descripcion} ${item.unidad}`);
+          return matchesCategory && (!term || searchable.includes(term));
+        });
+
+      if (visibleRows.length === 0) {
+        refs.databaseBody.innerHTML = `<tr><td class="empty-row" colspan="5">No hay partidas que coincidan con la búsqueda.</td></tr>`;
+        return;
+      }
+
+      refs.databaseBody.innerHTML = visibleRows.map(({ item, index }) => `
+        <tr>
+          <td>${escapeHTML(item.categoria)}</td>
+          <td>${escapeHTML(item.descripcion)}</td>
+          <td>${escapeHTML(item.unidad)}</td>
+          <td><input data-db-index="${index}" type="number" min="0" step="1" value="${escapeAttribute(item.precioUnitario)}" aria-label="Precio unitario de ${escapeAttribute(item.descripcion)}" /></td>
+          <td><button class="btn btn-primary" type="button" data-add-db-index="${index}">Agregar</button></td>
+        </tr>
+      `).join("");
+    }
+
+    function handleDatabaseInput(event) {
+      const index = Number(event.target.dataset.dbIndex);
+      if (Number.isNaN(index) || !priceDatabase[index]) return;
+      event.target.value = cleanNonNegative(event.target.value);
+      priceDatabase[index].precioUnitario = toNumber(event.target.value);
+      savePriceDatabase();
+    }
+
+    function handleDatabaseClick(event) {
+      const index = Number(event.target.dataset.addDbIndex);
+      if (Number.isNaN(index)) return;
+      addItemFromDatabase(index);
+    }
+
+    function addItemFromDatabase(index) {
+      const baseItem = priceDatabase[index];
+      if (!baseItem) return;
+      addItem({
+        categoria: baseItem.categoria,
+        descripcion: baseItem.descripcion,
+        unidad: baseItem.unidad,
+        cantidad: 1,
+        precioUnitario: baseItem.precioUnitario
+      });
+      showToast("Partida agregada al presupuesto.");
+    }
+
+    function requestResetDatabase() {
+      openModal(
+        "Restaurar base inicial",
+        "Se reemplazarán los precios editados por los valores referenciales iniciales.",
+        "Restaurar",
+        () => {
+          priceDatabase = clone(DEFAULT_PRICE_DATABASE);
+          savePriceDatabase();
+          renderPriceDatabase();
+          showToast("Base de precios restaurada.");
+        }
+      );
+    }
+
+    function requestClearBudget() {
+      openModal(
+        "Limpiar presupuesto",
+        "Se limpiará el presupuesto actual y se generará un nuevo número.",
+        "Limpiar",
+        () => {
+          currentBudget = createEmptyBudget();
+          currentBudget.items = [];
+          addItem();
+          renderBudget();
+          showToast("Presupuesto limpio.");
+        }
+      );
+    }
+
+    function newBudget() {
+      currentBudget = createEmptyBudget();
+      currentBudget.items = [];
+      addItem();
+      renderBudget();
+      scrollToSection("#budgetSection");
+      showToast("Nuevo presupuesto creado.");
+    }
+
+    // Exportaciones y salida formal.
+    function exportCSV() {
+      const totals = calculateTotals();
+      const rows = [
+        ["Número", currentBudget.number],
+        ["Cliente", currentBudget.clientName],
+        ["Proyecto", currentBudget.projectName],
+        ["Ubicación", currentBudget.location],
+        ["Fecha", currentBudget.date],
+        [],
+        ["Ítem", "Categoría", "Descripción", "Unidad", "Cantidad", "Precio unitario", "Subtotal"],
+        ...currentBudget.items.map((item, index) => [
+          index + 1,
+          item.categoria,
+          item.descripcion,
+          item.unidad,
+          toNumber(item.cantidad),
+          toNumber(item.precioUnitario),
+          toNumber(item.cantidad) * toNumber(item.precioUnitario)
+        ]),
+        [],
+        ["Costo directo", totals.costoDirecto],
+        ["Gastos generales", totals.gastosGenerales],
+        ["Utilidad", totals.utilidad],
+        ["Descuento", totals.descuento],
+        ["Subtotal neto", totals.subtotalNeto],
+        ["IVA", totals.iva],
+        ["Total final", totals.totalFinal],
+        [],
+        ["Observaciones", currentBudget.observations]
+      ];
+
+      const csvContent = rows.map((row) => row.map(toCSVCell).join(";")).join("\n");
+      const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = `${safeFileName(currentBudget.number || "presupuesto")}.csv`;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      URL.revokeObjectURL(url);
+      showToast("CSV exportado.");
+    }
+
+    function printBudget() {
+      renderPrintDocument();
+      window.print();
+    }
+
+    async function copySummaryToClipboard() {
+      const totals = calculateTotals();
+      const summary = [
+        `Presupuesto: ${currentBudget.number}`,
+        `Proyecto: ${currentBudget.projectName || "Sin nombre"}`,
+        `Cliente: ${currentBudget.clientName || "Sin cliente"}`,
+        `Costo directo: ${formatCurrency(totals.costoDirecto)}`,
+        `Gastos generales: ${formatCurrency(totals.gastosGenerales)}`,
+        `Utilidad: ${formatCurrency(totals.utilidad)}`,
+        `Descuento: ${formatCurrency(totals.descuento)}`,
+        `Subtotal neto: ${formatCurrency(totals.subtotalNeto)}`,
+        `IVA (${currentBudget.ivaPercent}%): ${formatCurrency(totals.iva)}`,
+        `Total final: ${formatCurrency(totals.totalFinal)}`
+      ].join("\n");
+
+      try {
+        await navigator.clipboard.writeText(summary);
+      } catch (error) {
+        const textarea = document.createElement("textarea");
+        textarea.value = summary;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand("copy");
+        textarea.remove();
+      }
+      showToast("Resumen copiado al portapapeles.");
+    }
+
+    function renderPrintDocument() {
+      const totals = calculateTotals();
+      const rows = currentBudget.items.length
+        ? currentBudget.items.map((item, index) => `
+          <tr>
+            <td>${index + 1}</td>
+            <td>${escapeHTML(item.categoria)}</td>
+            <td>${escapeHTML(item.descripcion || "-")}</td>
+            <td>${escapeHTML(item.unidad || "-")}</td>
+            <td class="num">${formatNumber(toNumber(item.cantidad))}</td>
+            <td class="num">${formatCurrency(toNumber(item.precioUnitario))}</td>
+            <td class="num">${formatCurrency(toNumber(item.cantidad) * toNumber(item.precioUnitario))}</td>
+          </tr>
+        `).join("")
+        : `<tr><td colspan="7">Sin partidas registradas.</td></tr>`;
+
+      refs.printDocument.innerHTML = `
+        <div class="print-header">
+          <div>
+            <p>Presupuesto de obra</p>
+            <h1>${escapeHTML(currentBudget.projectName || "Proyecto sin nombre")}</h1>
+          </div>
+          <div>
+            <strong>Número:</strong> ${escapeHTML(currentBudget.number || "-")}<br>
+            <strong>Fecha:</strong> ${formatDate(currentBudget.date)}
+          </div>
+        </div>
+
+        <div class="print-meta">
+          <div><strong>Cliente:</strong> ${escapeHTML(currentBudget.clientName || "-")}</div>
+          <div><strong>Ubicación:</strong> ${escapeHTML(currentBudget.location || "-")}</div>
+          <div><strong>Proyecto:</strong> ${escapeHTML(currentBudget.projectName || "-")}</div>
+          <div><strong>Total de partidas:</strong> ${currentBudget.items.length}</div>
+        </div>
+
+        <div class="print-block">
+          <h2>Detalle de partidas</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Ítem</th>
+                <th>Categoría</th>
+                <th>Descripción</th>
+                <th>Unidad</th>
+                <th>Cantidad</th>
+                <th>Precio unitario</th>
+                <th>Subtotal</th>
+              </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>
+
+        <div class="print-block">
+          <h2>Resumen de costos</h2>
+          <div class="print-summary">
+            <div><strong>Costo directo:</strong> ${formatCurrency(totals.costoDirecto)}</div>
+            <div><strong>Gastos generales (${formatNumber(currentBudget.generalExpensesPercent)}%):</strong> ${formatCurrency(totals.gastosGenerales)}</div>
+            <div><strong>Utilidad (${formatNumber(currentBudget.profitPercent)}%):</strong> ${formatCurrency(totals.utilidad)}</div>
+            <div><strong>Descuento:</strong> ${formatCurrency(totals.descuento)}</div>
+            <div><strong>Subtotal neto:</strong> ${formatCurrency(totals.subtotalNeto)}</div>
+            <div><strong>IVA (${formatNumber(currentBudget.ivaPercent)}%):</strong> ${formatCurrency(totals.iva)}</div>
+          </div>
+          <div class="print-total">Total final: ${formatCurrency(totals.totalFinal)}</div>
+        </div>
+
+        <div class="print-block">
+          <h2>Observaciones</h2>
+          <p>${escapeHTML(currentBudget.observations || "Sin observaciones.")}</p>
+        </div>
+
+        <div class="signature-line">Firma y aprobación</div>
+      `;
+    }
+
+    // Utilidades de almacenamiento y formato.
+    function getSavedBudgets() {
+      try {
+        return JSON.parse(localStorage.getItem(STORAGE_KEYS.budgets) || "[]");
+      } catch (error) {
+        return [];
+      }
+    }
+
+    function loadPriceDatabase() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEYS.priceDatabase) || "null");
+        return Array.isArray(saved) && saved.length ? saved : clone(DEFAULT_PRICE_DATABASE);
+      } catch (error) {
+        return clone(DEFAULT_PRICE_DATABASE);
+      }
+    }
+
+    function savePriceDatabase() {
+      localStorage.setItem(STORAGE_KEYS.priceDatabase, JSON.stringify(priceDatabase));
+    }
+
+    function calculateTotalsForBudget(budget) {
+      const previous = currentBudget;
+      currentBudget = budget;
+      const totals = calculateTotals();
+      currentBudget = previous;
+      return totals;
+    }
+
+    function openModal(title, text, actionLabel, action) {
+      refs.modalTitle.textContent = title;
+      refs.modalText.textContent = text;
+      refs.modalConfirm.textContent = actionLabel;
+      modalAction = action;
+      refs.modalBackdrop.classList.add("is-visible");
+      refs.modalConfirm.focus();
+    }
+
+    function closeModal() {
+      refs.modalBackdrop.classList.remove("is-visible");
+      modalAction = null;
+    }
+
+    function showToast(message) {
+      clearTimeout(toastTimer);
+      refs.toast.textContent = message;
+      refs.toast.classList.add("is-visible");
+      toastTimer = setTimeout(() => refs.toast.classList.remove("is-visible"), 3200);
+    }
+
+    function scrollToSection(selector) {
+      const target = document.querySelector(selector);
+      if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    function toNumber(value) {
+      const number = Number(value);
+      return Number.isFinite(number) && number > 0 ? number : 0;
+    }
+
+    function cleanNonNegative(value) {
+      const number = Number(value);
+      if (!Number.isFinite(number) || number < 0) return "0";
+      return value;
+    }
+
+    function formatCurrency(value) {
+      return new Intl.NumberFormat("es-CL", {
+        style: "currency",
+        currency: "CLP",
+        maximumFractionDigits: 0
+      }).format(Math.round(toNumber(value)));
+    }
+
+    function formatNumber(value) {
+      return new Intl.NumberFormat("es-CL", { maximumFractionDigits: 2 }).format(toNumber(value));
+    }
+
+    function formatDate(value) {
+      if (!value) return "-";
+      const date = new Date(`${value}T00:00:00`);
+      if (Number.isNaN(date.getTime())) return value;
+      return new Intl.DateTimeFormat("es-CL").format(date);
+    }
+
+    function normalizeText(value) {
+      return String(value || "")
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
+    }
+
+    function escapeHTML(value) {
+      return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function escapeAttribute(value) {
+      return escapeHTML(value);
+    }
+
+    function toCSVCell(value) {
+      const text = String(value ?? "");
+      return `"${text.replace(/"/g, '""')}"`;
+    }
+
+    function safeFileName(value) {
+      return String(value || "presupuesto")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-zA-Z0-9-_]+/g, "-")
+        .replace(/^-+|-+$/g, "")
+        .toLowerCase();
+    }
+
+    function uniqueId() {
+      if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+      return `id-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    }
+
+    function clone(value) {
+      return JSON.parse(JSON.stringify(value));
+    }
+  </script>
+</body>
+</html>
