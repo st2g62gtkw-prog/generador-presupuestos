@@ -890,7 +890,7 @@
         <nav class="topbar-actions" aria-label="Acciones principales">
           <button class="btn btn-primary" type="button" id="topNewBudget">Nuevo presupuesto</button>
           <button class="btn btn-ghost" type="button" data-scroll="#onlineSection">Online</button>
-          <button class="btn btn-ghost" type="button" data-scroll="#savedSection">Guardados</button>
+          <button class="btn btn-ghost" type="button" data-scroll="#savedSection">Borradores</button>
           <button class="btn btn-ghost" type="button" data-scroll="#databaseSection">Base de precios</button>
           <button class="btn btn-ghost" type="button" data-scroll="#apusSection">APUs</button>
           <button class="btn btn-danger" type="button" id="logoutBtn">Cerrar sesión</button>
@@ -908,7 +908,7 @@
           </div>
         </div>
         <div class="toolbar">
-          <button class="btn btn-primary" type="button" id="saveOnlineBtn">Guardar online</button>
+          <button class="btn btn-primary" type="button" id="saveOnlineBtn">Guardar presupuesto</button>
           <button class="btn btn-ghost" type="button" id="loadOnlineBtn">Cargar presupuestos online</button>
           <button class="btn btn-blue" type="button" id="syncBtn">Sincronizar</button>
           <button class="btn btn-warning" type="button" id="migrateLocalBtn">Migrar datos locales a Supabase</button>
@@ -921,11 +921,11 @@
           <h1>Generador de Presupuestos de Obra</h1>
           <p class="hero-copy">
             Crea presupuestos de construcción con partidas editables, precios referenciales,
-            cálculos automáticos, guardado local y una vista formal lista para imprimir o exportar a PDF.
+            cálculos automáticos, guardado online y una vista formal lista para imprimir o exportar a PDF.
           </p>
           <div class="hero-actions">
             <button class="btn btn-primary" type="button" id="heroNewBudget">Nuevo presupuesto</button>
-            <button class="btn btn-blue" type="button" data-scroll="#savedSection">Ver presupuestos guardados</button>
+            <button class="btn btn-blue" type="button" data-scroll="#onlineBudgetsSection">Ver presupuestos online</button>
             <button class="btn btn-ghost" type="button" data-scroll="#databaseSection">Base de precios</button>
           </div>
         </div>
@@ -958,6 +958,7 @@
           </div>
           <div class="screen-actions">
             <button class="btn btn-primary" type="button" id="saveBudgetBtn">Guardar presupuesto</button>
+            <button class="btn btn-ghost" type="button" id="saveLocalDraftBtn">Guardar borrador local</button>
             <button class="btn btn-warning" type="button" id="clearBudgetBtn">Limpiar presupuesto</button>
           </div>
         </div>
@@ -1095,10 +1096,10 @@
       <section class="section" id="savedSection">
         <div class="section-header">
           <div>
-            <h2>Presupuestos guardados</h2>
-            <p>Carga, duplica o elimina presupuestos almacenados en este navegador mediante localStorage.</p>
+            <h2>Borradores locales</h2>
+            <p>Respaldo opcional en este navegador. Estos borradores no se sincronizan entre dispositivos.</p>
           </div>
-          <button class="btn btn-ghost" type="button" id="refreshSavedBtn">Actualizar lista</button>
+          <button class="btn btn-ghost" type="button" id="refreshSavedBtn">Actualizar borradores</button>
         </div>
         <div class="saved-list" id="savedList"></div>
       </section>
@@ -1371,6 +1372,7 @@
       document.getElementById("topNewBudget").addEventListener("click", newBudget);
       document.getElementById("heroNewBudget").addEventListener("click", newBudget);
       document.getElementById("saveBudgetBtn").addEventListener("click", saveBudget);
+      document.getElementById("saveLocalDraftBtn").addEventListener("click", saveLocalDraft);
       document.getElementById("saveOnlineBtn").addEventListener("click", saveBudgetOnline);
       document.getElementById("loadOnlineBtn").addEventListener("click", loadOnlineBudgets);
       document.getElementById("syncBtn").addEventListener("click", syncOnline);
@@ -1637,21 +1639,30 @@
         showToast("Completa el nombre del proyecto antes de guardar online.");
         return;
       }
-      if (!requireOnlineSession()) return;
+      if (!requireSupabaseClient()) return;
+      if (!currentSession) {
+        showToast("Para guardar en tu cuenta, inicia sesión.");
+        setSyncStatus("Para guardar en tu cuenta, inicia sesión.", "error");
+        renderSessionState();
+        return;
+      }
 
       setSyncStatus("Guardando presupuesto online...", "idle");
       try {
         const saved = await saveBudgetRecordOnline(currentBudget);
         currentBudget.onlineId = saved.id;
         currentBudget.updatedAt = saved.updated_at || new Date().toISOString();
-        persistLocalBudget(false);
-        renderSavedBudgets();
         await loadOnlineBudgets();
-        setSyncStatus("Presupuesto guardado online.", "saved");
-        showToast("Presupuesto guardado en Supabase.");
+        setSyncStatus("Presupuesto guardado online correctamente.", "saved");
+        showToast("Presupuesto guardado online correctamente.");
       } catch (error) {
         setSyncStatus(error.message, "error");
-        showToast("Error al guardar online.");
+        openModal(
+          "No se pudo guardar online",
+          "Falló el guardado en Supabase. Puedes guardar un borrador local en este navegador mientras revisas la conexión.",
+          "Guardar borrador local",
+          () => persistLocalBudget(true)
+        );
       }
     }
 
@@ -1815,7 +1826,7 @@
     function requestMigrateLocalBudgets() {
       openModal(
         "Migrar datos locales a Supabase",
-        "Se subirán los presupuestos guardados en localStorage al usuario actual de Supabase.",
+        "Se subirán los borradores locales guardados en este navegador al usuario actual de Supabase.",
         "Migrar",
         migrateLocalBudgetsToSupabase
       );
@@ -1825,11 +1836,11 @@
       if (!requireOnlineSession()) return;
       const localBudgets = getSavedBudgets();
       if (localBudgets.length === 0) {
-        showToast("No hay presupuestos locales para migrar.");
+        showToast("No hay borradores locales para migrar.");
         return;
       }
 
-      setSyncStatus(`Migrando ${localBudgets.length} presupuestos locales...`, "idle");
+      setSyncStatus(`Migrando ${localBudgets.length} borradores locales...`, "idle");
       try {
         const migrated = [];
         for (const budget of localBudgets) {
@@ -2184,11 +2195,27 @@
       return !missingProject;
     }
 
-    // Guarda, carga, elimina y duplica presupuestos usando localStorage.
-    function saveBudget() {
+    // El guardado principal usa Supabase cuando hay sesión iniciada.
+    async function saveBudget() {
       if (!validateBudget()) {
         refs.projectName.focus();
         showToast("Completa el nombre del proyecto antes de guardar.");
+        return;
+      }
+
+      if (!currentSession) {
+        showToast("Para guardar en tu cuenta, inicia sesión.");
+        setSyncStatus("Para guardar en tu cuenta, inicia sesión.", "error");
+        return;
+      }
+
+      await saveBudgetOnline();
+    }
+
+    function saveLocalDraft() {
+      if (!validateBudget()) {
+        refs.projectName.focus();
+        showToast("Completa el nombre del proyecto antes de guardar un borrador.");
         return;
       }
 
@@ -2216,7 +2243,7 @@
       currentBudget = clone(budgetToSave);
       renderSavedBudgets();
       renderBudget();
-      if (showMessage) showToast("Presupuesto guardado en este navegador.");
+      if (showMessage) showToast("Borrador local guardado en este navegador.");
     }
 
     function loadBudget(id) {
@@ -2228,7 +2255,7 @@
       currentBudget = clone(budget);
       renderBudget();
       scrollToSection("#budgetSection");
-      showToast("Presupuesto cargado.");
+      showToast("Borrador local cargado.");
     }
 
     function deleteBudget(id) {
@@ -2236,7 +2263,7 @@
       localStorage.setItem(STORAGE_KEYS.budgets, JSON.stringify(nextBudgets));
       if (currentBudget.id === id) currentBudget.id = null;
       renderSavedBudgets();
-      showToast("Presupuesto eliminado.");
+      showToast("Borrador local eliminado.");
     }
 
     function duplicateBudget(id) {
@@ -2260,7 +2287,7 @@
     function renderSavedBudgets() {
       const budgets = getSavedBudgets();
       if (budgets.length === 0) {
-        refs.savedList.innerHTML = `<div class="empty-row">Todavía no hay presupuestos guardados.</div>`;
+        refs.savedList.innerHTML = `<div class="empty-row">Todavía no hay borradores locales.</div>`;
         return;
       }
 
@@ -2296,8 +2323,8 @@
       if (duplicateId) duplicateBudget(duplicateId);
       if (deleteId) {
         openModal(
-          "Eliminar presupuesto",
-          "El presupuesto se borrará de localStorage en este navegador.",
+          "Eliminar borrador local",
+          "El borrador local se borrará de este navegador.",
           "Eliminar",
           () => deleteBudget(deleteId)
         );
