@@ -1,64 +1,2778 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Zombie Rounds 3D</title>
-    <link rel="stylesheet" href="./style.css" />
-  </head>
-  <body>
-    <main id="game">
-      <canvas id="gameCanvas"></canvas>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Generador de Presupuestos de Obra</title>
+  <style>
+    :root {
+      --bg: #f5f7f6;
+      --surface: #ffffff;
+      --surface-2: #eef3f1;
+      --ink: #17201b;
+      --muted: #66736c;
+      --line: #d9e1dd;
+      --brand: #176b4d;
+      --brand-2: #0f5139;
+      --blue: #245a85;
+      --amber: #b7791f;
+      --danger: #b42318;
+      --success: #0f7a4a;
+      --shadow: 0 12px 32px rgba(23, 32, 27, 0.08);
+      --radius: 8px;
+    }
 
-      <section id="hud" aria-label="Estado del juego">
-        <div>Vida: <span id="healthValue">100</span></div>
-        <div>Ronda: <span id="roundValue">1</span></div>
-        <div>Enemigos: <span id="enemyValue">0</span></div>
-        <div>Puntaje: <span id="scoreValue">0</span></div>
-        <div>Record: <span id="bestScoreValue">0</span></div>
-      </section>
+    /* Base visual y controles generales */
+    * {
+      box-sizing: border-box;
+    }
 
-      <div id="crosshair" aria-hidden="true"></div>
+    html {
+      scroll-behavior: smooth;
+    }
 
-      <section id="startMessage" class="message">
-        <div class="messagePanel">
-          <h1>Zombie Rounds 3D</h1>
-          <p>Sobrevive rondas de enemigos simples y suma puntos.</p>
-          <ul class="controlsList">
-            <li>WASD: moverse</li>
-            <li>Mouse: mirar</li>
-            <li>Click: disparar</li>
-            <li>R: reiniciar al perder</li>
-          </ul>
-          <button id="playButton" type="button">Jugar</button>
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.45;
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+      font: inherit;
+    }
+
+    button {
+      border: 0;
+      cursor: pointer;
+    }
+
+    .app-shell {
+      min-height: 100vh;
+    }
+
+    /* Encabezado fijo y navegación principal */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(12px);
+    }
+
+    .topbar-inner,
+    .page {
+      width: min(1240px, calc(100% - 32px));
+      margin: 0 auto;
+    }
+
+    .topbar-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      min-height: 68px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+      font-weight: 800;
+    }
+
+    .brand-mark {
+      display: grid;
+      flex: 0 0 38px;
+      width: 38px;
+      height: 38px;
+      place-items: center;
+      border-radius: 8px;
+      background: var(--brand);
+      color: #fff;
+      font-size: 20px;
+      font-weight: 900;
+    }
+
+    .brand span:last-child {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .topbar-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    .page {
+      padding: 28px 0 56px;
+    }
+
+    /* Pantalla principal tipo dashboard */
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr);
+      gap: 20px;
+      align-items: stretch;
+      margin-bottom: 20px;
+    }
+
+    .hero-panel {
+      padding: 24px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: linear-gradient(135deg, #ffffff 0%, #edf5f0 100%);
+      box-shadow: var(--shadow);
+    }
+
+    .eyebrow {
+      margin: 0 0 8px;
+      color: var(--brand);
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0;
+      text-transform: uppercase;
+    }
+
+    h1,
+    h2,
+    h3 {
+      margin: 0;
+      letter-spacing: 0;
+      line-height: 1.15;
+    }
+
+    h1 {
+      max-width: 760px;
+      font-size: clamp(2rem, 4vw, 3.4rem);
+    }
+
+    .hero-copy {
+      max-width: 760px;
+      margin: 14px 0 0;
+      color: var(--muted);
+      font-size: 1.03rem;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 22px;
+    }
+
+    .stats-card {
+      display: grid;
+      gap: 14px;
+      padding: 20px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+
+    .stat-line {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--line);
+      color: var(--muted);
+    }
+
+    .stat-line:last-child {
+      padding-bottom: 0;
+      border-bottom: 0;
+    }
+
+    .stat-line strong {
+      color: var(--ink);
+      font-size: 1.08rem;
+      text-align: right;
+    }
+
+    /* Secciones, formularios y tarjetas de trabajo */
+    .section {
+      margin-top: 20px;
+      padding: 20px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+
+    .section-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    .section-header p {
+      max-width: 760px;
+      margin: 6px 0 0;
+      color: var(--muted);
+    }
+
+    .toolbar,
+    .screen-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 42px;
+      padding: 10px 14px;
+      border-radius: 8px;
+      background: var(--surface-2);
+      color: var(--ink);
+      font-weight: 800;
+      text-decoration: none;
+      transition: transform 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 18px rgba(23, 32, 27, 0.12);
+    }
+
+    .btn-primary {
+      background: var(--brand);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: var(--brand-2);
+    }
+
+    .btn-blue {
+      background: var(--blue);
+      color: #fff;
+    }
+
+    .btn-warning {
+      background: #fff4df;
+      color: #7a4a0b;
+    }
+
+    .btn-danger {
+      background: #fff1ef;
+      color: var(--danger);
+    }
+
+    .btn-ghost {
+      border: 1px solid var(--line);
+      background: #fff;
+    }
+
+    .icon-btn {
+      width: 40px;
+      min-width: 40px;
+      height: 40px;
+      padding: 0;
+      border-radius: 8px;
+    }
+
+    .warning-banner {
+      display: none;
+      margin-bottom: 16px;
+      padding: 12px 14px;
+      border: 1px solid #f4c27a;
+      border-radius: 8px;
+      background: #fff7e8;
+      color: #7a4a0b;
+      font-weight: 700;
+    }
+
+    .warning-banner.is-visible {
+      display: block;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .field {
+      display: grid;
+      gap: 7px;
+    }
+
+    .field.full {
+      grid-column: 1 / -1;
+    }
+
+    label {
+      color: #34443b;
+      font-size: 0.9rem;
+      font-weight: 800;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      min-height: 42px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--ink);
+      padding: 10px 11px;
+      outline: none;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+    }
+
+    textarea {
+      min-height: 92px;
+      resize: vertical;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: var(--brand);
+      box-shadow: 0 0 0 3px rgba(23, 107, 77, 0.16);
+    }
+
+    .is-invalid {
+      border-color: var(--amber);
+      background: #fffaf1;
+    }
+
+    .mini-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 16px;
+    }
+
+    /* Tablas editables y herramientas de búsqueda */
+    .table-tools {
+      display: grid;
+      grid-template-columns: minmax(220px, 1fr) minmax(180px, 260px) auto;
+      gap: 12px;
+      align-items: end;
+      margin-bottom: 12px;
+    }
+
+    .table-wrap {
+      width: 100%;
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 880px;
+    }
+
+    th {
+      background: #eef3f1;
+      color: #34443b;
+      font-size: 0.82rem;
+      text-align: left;
+      text-transform: uppercase;
+    }
+
+    th,
+    td {
+      padding: 10px;
+      border-bottom: 1px solid var(--line);
+      vertical-align: middle;
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    td input,
+    td select {
+      min-height: 38px;
+      padding: 8px 9px;
+    }
+
+    .num {
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    .empty-row {
+      padding: 22px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    /* Resumen financiero */
+    .financial-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(320px, 420px);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .summary-list {
+      display: grid;
+      gap: 10px;
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfcfb;
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      color: var(--muted);
+    }
+
+    .summary-row strong {
+      color: var(--ink);
+      text-align: right;
+    }
+
+    .summary-row.total {
+      margin-top: 8px;
+      padding-top: 14px;
+      border-top: 2px solid var(--line);
+      color: var(--ink);
+      font-size: 1.22rem;
+      font-weight: 900;
+    }
+
+    .summary-row.total strong {
+      color: var(--brand);
+      font-size: 1.35rem;
+    }
+
+    .saved-list,
+    .database-grid {
+      display: grid;
+      gap: 12px;
+    }
+
+    .auth-screen {
+      display: none;
+      min-height: 100vh;
+      padding: 42px 0;
+      background: var(--bg);
+    }
+
+    .auth-screen.is-visible {
+      display: block;
+    }
+
+    .auth-panel {
+      width: min(960px, calc(100% - 32px));
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(300px, 420px);
+      gap: 20px;
+      align-items: stretch;
+    }
+
+    .auth-copy,
+    .auth-card {
+      padding: 24px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+
+    .auth-copy {
+      background: linear-gradient(135deg, #ffffff 0%, #edf5f0 100%);
+    }
+
+    .auth-copy p {
+      color: var(--muted);
+    }
+
+    .auth-card {
+      display: grid;
+      gap: 14px;
+    }
+
+    .app-shell.is-locked {
+      display: none;
+    }
+
+    .sync-strip {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 20px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+
+    .sync-status {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      color: var(--muted);
+    }
+
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--amber);
+    }
+
+    .status-dot.is-online {
+      background: var(--success);
+    }
+
+    .status-dot.is-error {
+      background: var(--danger);
+    }
+
+    .config-panel {
+      display: grid;
+      grid-template-columns: minmax(260px, 1fr) minmax(260px, 1fr) auto;
+      gap: 12px;
+      align-items: end;
+      margin-bottom: 14px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfcfb;
+    }
+
+    .apu-form {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .apu-form .wide {
+      grid-column: span 2;
+    }
+
+    .apu-form .full {
+      grid-column: 1 / -1;
+    }
+
+    .saved-card {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 12px;
+      align-items: center;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    .saved-card h3 {
+      font-size: 1rem;
+    }
+
+    .saved-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 16px;
+      margin-top: 7px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .database-tools {
+      display: grid;
+      grid-template-columns: minmax(220px, 1fr) minmax(180px, 260px);
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      min-height: 28px;
+      padding: 4px 9px;
+      border-radius: 999px;
+      background: var(--surface-2);
+      color: #34443b;
+      font-size: 0.82rem;
+      font-weight: 800;
+    }
+
+    /* Mensajes visuales y modales, sin alert/prompt/confirm */
+    .toast {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      z-index: 50;
+      display: none;
+      max-width: min(420px, calc(100vw - 36px));
+      padding: 13px 15px;
+      border: 1px solid #bddcca;
+      border-radius: 8px;
+      background: #effaf4;
+      color: #134d33;
+      box-shadow: var(--shadow);
+      font-weight: 800;
+    }
+
+    .toast.is-visible {
+      display: block;
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 60;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+      background: rgba(23, 32, 27, 0.42);
+    }
+
+    .modal-backdrop.is-visible {
+      display: flex;
+    }
+
+    .modal {
+      width: min(460px, 100%);
+      padding: 18px;
+      border-radius: 8px;
+      background: #fff;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.22);
+    }
+
+    .modal p {
+      margin: 10px 0 18px;
+      color: var(--muted);
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .print-document {
+      display: none;
+    }
+
+    @media (max-width: 980px) {
+      .hero,
+      .financial-grid,
+      .auth-panel {
+        grid-template-columns: 1fr;
+      }
+
+      .form-grid,
+      .mini-grid,
+      .apu-form {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .config-panel,
+      .sync-strip {
+        grid-template-columns: 1fr;
+      }
+
+      .table-tools {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .table-tools .btn {
+        grid-column: 1 / -1;
+      }
+    }
+
+    @media (max-width: 700px) {
+      .topbar-inner,
+      .page {
+        width: min(100% - 22px, 1240px);
+      }
+
+      .topbar-inner,
+      .section-header,
+      .saved-card {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .topbar-inner {
+        padding: 12px 0;
+      }
+
+      .topbar-actions,
+      .screen-actions,
+      .toolbar,
+      .hero-actions,
+      .saved-card {
+        display: grid;
+        grid-template-columns: 1fr;
+      }
+
+      .section,
+      .hero-panel,
+      .stats-card {
+        padding: 16px;
+      }
+
+      .form-grid,
+      .mini-grid,
+      .table-tools,
+      .apu-form,
+      .database-tools {
+        grid-template-columns: 1fr;
+      }
+
+      .apu-form .wide {
+        grid-column: 1 / -1;
+      }
+
+      .btn {
+        width: 100%;
+      }
+
+      .summary-row.total {
+        font-size: 1.06rem;
+      }
+    }
+
+    /* Documento formal para imprimir o exportar a PDF */
+    @media print {
+      @page {
+        margin: 18mm;
+      }
+
+      body {
+        background: #fff;
+        color: #111;
+      }
+
+      .app-shell,
+      .auth-screen,
+      .toast,
+      .modal-backdrop {
+        display: none !important;
+      }
+
+      .print-document {
+        display: block;
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 11pt;
+      }
+
+      .print-header {
+        display: flex;
+        justify-content: space-between;
+        gap: 18px;
+        padding-bottom: 14px;
+        border-bottom: 3px solid #111;
+      }
+
+      .print-header h1 {
+        font-size: 22pt;
+      }
+
+      .print-meta,
+      .print-summary {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px 18px;
+        margin-top: 18px;
+      }
+
+      .print-block {
+        margin-top: 20px;
+      }
+
+      .print-document table {
+        min-width: 0;
+        font-size: 9.5pt;
+      }
+
+      .print-document th {
+        background: #e8e8e8 !important;
+        color: #111;
+      }
+
+      .print-document th,
+      .print-document td {
+        padding: 7px;
+        border: 1px solid #999;
+      }
+
+      .print-total {
+        margin-top: 14px;
+        padding: 12px;
+        border: 2px solid #111;
+        text-align: right;
+        font-size: 16pt;
+        font-weight: 900;
+      }
+
+      .signature-line {
+        width: 260px;
+        margin-top: 52px;
+        padding-top: 8px;
+        border-top: 1px solid #111;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <section class="auth-screen is-visible" id="authScreen">
+    <div class="auth-panel">
+      <div class="auth-copy">
+        <p class="eyebrow">Acceso online con Supabase</p>
+        <h1>Generador de Presupuestos de Obra</h1>
+        <p>
+          Inicia sesión para guardar presupuestos y APUs en la nube. Cada usuario ve solo sus propios datos gracias a Row Level Security.
+        </p>
+        <p>
+          Antes de iniciar sesión, pega tu Supabase URL y tu publishable key o anon key en la configuración del archivo.
+        </p>
+      </div>
+
+      <form class="auth-card" id="authForm">
+        <h2 id="authTitle">Iniciar sesión</h2>
+        <div class="field">
+          <label for="authEmail">Correo</label>
+          <input id="authEmail" type="email" autocomplete="email" required />
+        </div>
+        <div class="field">
+          <label for="authPassword">Contraseña</label>
+          <input id="authPassword" type="password" autocomplete="current-password" required minlength="6" />
+        </div>
+        <div class="toolbar">
+          <button class="btn btn-primary" type="submit" id="loginBtn">Iniciar sesión</button>
+          <button class="btn btn-ghost" type="button" id="signupBtn">Crear cuenta</button>
+          <button class="btn btn-warning" type="button" id="localModeBtn">Modo local</button>
+        </div>
+        <div class="warning-banner is-visible" id="authMessage">Configura Supabase antes de usar el acceso online.</div>
+      </form>
+    </div>
+  </section>
+
+  <div class="app-shell is-locked" id="appShell">
+    <header class="topbar">
+      <div class="topbar-inner">
+        <div class="brand" aria-label="Generador de Presupuestos de Obra">
+          <span class="brand-mark">P</span>
+          <span>Presupuestos de Obra</span>
+        </div>
+        <nav class="topbar-actions" aria-label="Acciones principales">
+          <button class="btn btn-primary" type="button" id="topNewBudget">Nuevo presupuesto</button>
+          <button class="btn btn-ghost" type="button" data-scroll="#onlineSection">Online</button>
+          <button class="btn btn-ghost" type="button" data-scroll="#savedSection">Borradores</button>
+          <button class="btn btn-ghost" type="button" data-scroll="#databaseSection">Base de precios</button>
+          <button class="btn btn-ghost" type="button" data-scroll="#apusSection">APUs</button>
+          <button class="btn btn-danger" type="button" id="logoutBtn">Cerrar sesión</button>
+        </nav>
+      </div>
+    </header>
+
+    <main class="page">
+      <section class="sync-strip" id="onlineSection">
+        <div>
+          <div class="sync-status">
+            <span class="status-dot" id="syncDot"></span>
+            <strong id="sessionLabel">Sin sesión</strong>
+            <span id="syncStatusText">Pendiente de configurar Supabase.</span>
+          </div>
+        </div>
+        <div class="toolbar">
+          <button class="btn btn-primary" type="button" id="saveOnlineBtn">Guardar presupuesto</button>
+          <button class="btn btn-ghost" type="button" id="loadOnlineBtn">Cargar presupuestos online</button>
+          <button class="btn btn-blue" type="button" id="syncBtn">Sincronizar</button>
+          <button class="btn btn-warning" type="button" id="migrateLocalBtn">Migrar datos locales a Supabase</button>
         </div>
       </section>
 
-      <section id="gameOverMessage" class="message hidden" aria-live="polite">
-        <div class="messagePanel">
-          <h1>Derrota</h1>
-          <p>Los zombies llegaron demasiado cerca.</p>
-          <dl class="statsList">
-            <div>
-              <dt>Ronda alcanzada</dt>
-              <dd id="finalRoundValue">1</dd>
+      <section class="hero" id="home">
+        <div class="hero-panel">
+          <p class="eyebrow">Dashboard de costos de construcción</p>
+          <h1>Generador de Presupuestos de Obra</h1>
+          <p class="hero-copy">
+            Crea presupuestos de construcción con partidas editables, precios referenciales,
+            cálculos automáticos, guardado online y una vista formal lista para imprimir o exportar a PDF.
+          </p>
+          <div class="hero-actions">
+            <button class="btn btn-primary" type="button" id="heroNewBudget">Nuevo presupuesto</button>
+            <button class="btn btn-blue" type="button" data-scroll="#onlineBudgetsSection">Ver presupuestos online</button>
+            <button class="btn btn-ghost" type="button" data-scroll="#databaseSection">Base de precios</button>
+          </div>
+        </div>
+
+        <aside class="stats-card" aria-label="Resumen del presupuesto actual">
+          <div class="stat-line">
+            <span>Presupuesto</span>
+            <strong id="statBudgetNumber">-</strong>
+          </div>
+          <div class="stat-line">
+            <span>Partidas</span>
+            <strong id="statItemsCount">0</strong>
+          </div>
+          <div class="stat-line">
+            <span>Costo directo</span>
+            <strong id="statDirectCost">$0</strong>
+          </div>
+          <div class="stat-line">
+            <span>Total final</span>
+            <strong id="statFinalTotal">$0</strong>
+          </div>
+        </aside>
+      </section>
+
+      <section class="section" id="budgetSection">
+        <div class="section-header">
+          <div>
+            <h2>Datos generales del presupuesto</h2>
+            <p>Completa la información del cliente y del proyecto. La fecha y el número se generan automáticamente, pero puedes editarlos.</p>
+          </div>
+          <div class="screen-actions">
+            <button class="btn btn-primary" type="button" id="saveBudgetBtn">Guardar presupuesto</button>
+            <button class="btn btn-ghost" type="button" id="saveLocalDraftBtn">Guardar borrador local</button>
+            <button class="btn btn-warning" type="button" id="clearBudgetBtn">Limpiar presupuesto</button>
+          </div>
+        </div>
+
+        <div class="warning-banner" id="projectWarning">Falta el nombre del proyecto. Completa este dato para guardar un presupuesto identificable.</div>
+
+        <form class="form-grid" id="budgetForm">
+          <div class="field">
+            <label for="clientName">Nombre del cliente</label>
+            <input id="clientName" type="text" autocomplete="off" />
+          </div>
+          <div class="field">
+            <label for="projectName">Nombre del proyecto</label>
+            <input id="projectName" type="text" autocomplete="off" />
+          </div>
+          <div class="field">
+            <label for="location">Ubicación</label>
+            <input id="location" type="text" autocomplete="off" />
+          </div>
+          <div class="field">
+            <label for="budgetDate">Fecha</label>
+            <input id="budgetDate" type="date" />
+          </div>
+          <div class="field">
+            <label for="budgetNumber">Número de presupuesto</label>
+            <input id="budgetNumber" type="text" autocomplete="off" />
+          </div>
+          <div class="field full">
+            <label for="observations">Observaciones generales</label>
+            <textarea id="observations" placeholder="Condiciones de pago, alcance, exclusiones u observaciones técnicas."></textarea>
+          </div>
+        </form>
+      </section>
+
+      <section class="section" id="itemsSection">
+        <div class="section-header">
+          <div>
+            <h2>Partidas del presupuesto</h2>
+            <p>Agrega partidas manualmente o desde la base de precios. Los subtotales se recalculan con cada cambio.</p>
+          </div>
+          <div class="toolbar">
+            <button class="btn btn-primary" type="button" id="addItemBtn">Agregar partida</button>
+            <button class="btn btn-ghost" type="button" data-scroll="#databaseSection">Agregar partida desde base de precios</button>
+          </div>
+        </div>
+
+        <div class="table-tools">
+          <div class="field">
+            <label for="itemSearch">Buscar partidas</label>
+            <input id="itemSearch" type="search" placeholder="Buscar por descripción, categoría o unidad" />
+          </div>
+          <div class="field">
+            <label for="itemCategoryFilter">Filtrar por categoría</label>
+            <select id="itemCategoryFilter"></select>
+          </div>
+          <span class="badge" id="visibleItemsLabel">0 partidas</span>
+        </div>
+
+        <div class="table-wrap">
+          <table aria-label="Partidas del presupuesto">
+            <thead>
+              <tr>
+                <th style="width: 70px;">Ítem</th>
+                <th style="width: 180px;">Categoría</th>
+                <th>Descripción</th>
+                <th style="width: 110px;">Unidad</th>
+                <th style="width: 120px;">Cantidad</th>
+                <th style="width: 150px;">Precio unitario</th>
+                <th style="width: 150px;">Subtotal</th>
+                <th style="width: 80px;">Eliminar</th>
+              </tr>
+            </thead>
+            <tbody id="itemsBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="section" id="financialSection">
+        <div class="section-header">
+          <div>
+            <h2>Resumen financiero</h2>
+            <p>Define gastos generales, utilidad, descuento e IVA. El IVA viene con 19% por defecto.</p>
+          </div>
+          <div class="toolbar">
+            <button class="btn btn-ghost" type="button" id="copySummaryBtn">Copiar resumen</button>
+            <button class="btn btn-ghost" type="button" id="exportCsvBtn">Exportar CSV</button>
+            <button class="btn btn-blue" type="button" id="printBtn">Imprimir presupuesto</button>
+            <button class="btn btn-primary" type="button" id="pdfBtn">Exportar a PDF</button>
+          </div>
+        </div>
+
+        <div class="financial-grid">
+          <div class="mini-grid">
+            <div class="field">
+              <label for="generalExpensesPercent">Gastos generales %</label>
+              <input id="generalExpensesPercent" type="number" min="0" step="0.01" />
             </div>
-            <div>
-              <dt>Puntaje final</dt>
-              <dd id="finalScoreValue">0</dd>
+            <div class="field">
+              <label for="profitPercent">Utilidad %</label>
+              <input id="profitPercent" type="number" min="0" step="0.01" />
             </div>
-            <div>
-              <dt>Record</dt>
-              <dd id="finalBestScoreValue">0</dd>
+            <div class="field">
+              <label for="discount">Descuento</label>
+              <input id="discount" type="number" min="0" step="1" />
             </div>
-          </dl>
-          <p class="hintText">Presiona R o usa el boton para reiniciar.</p>
-          <button id="restartButton" type="button">Reiniciar</button>
+            <div class="field">
+              <label for="ivaPercent">IVA %</label>
+              <input id="ivaPercent" type="number" min="0" step="0.01" />
+            </div>
+          </div>
+
+          <div class="summary-list" aria-live="polite">
+            <div class="summary-row"><span>Costo directo</span><strong id="directCostValue">$0</strong></div>
+            <div class="summary-row"><span>Gastos generales</span><strong id="generalExpensesValue">$0</strong></div>
+            <div class="summary-row"><span>Utilidad</span><strong id="profitValue">$0</strong></div>
+            <div class="summary-row"><span>Descuento</span><strong id="discountValue">$0</strong></div>
+            <div class="summary-row"><span>Subtotal neto</span><strong id="netSubtotalValue">$0</strong></div>
+            <div class="summary-row"><span>IVA</span><strong id="ivaValue">$0</strong></div>
+            <div class="summary-row total"><span>Total final</span><strong id="finalTotalValue">$0</strong></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="onlineBudgetsSection">
+        <div class="section-header">
+          <div>
+            <h2>Presupuestos online</h2>
+            <p>Presupuestos guardados en Supabase para el usuario actual.</p>
+          </div>
+          <button class="btn btn-ghost" type="button" id="refreshOnlineBtn">Actualizar online</button>
+        </div>
+        <div class="saved-list" id="onlineBudgetsList"></div>
+      </section>
+
+      <section class="section" id="savedSection">
+        <div class="section-header">
+          <div>
+            <h2>Borradores locales</h2>
+            <p>Respaldo opcional en este navegador. Estos borradores no se sincronizan entre dispositivos.</p>
+          </div>
+          <button class="btn btn-ghost" type="button" id="refreshSavedBtn">Actualizar borradores</button>
+        </div>
+        <div class="saved-list" id="savedList"></div>
+      </section>
+
+      <section class="section" id="databaseSection">
+        <div class="section-header">
+          <div>
+            <h2>Base de precios</h2>
+            <p>Precios referenciales editables. Selecciona una partida para agregarla al presupuesto actual.</p>
+          </div>
+          <button class="btn btn-ghost" type="button" id="resetDatabaseBtn">Restaurar base inicial</button>
+        </div>
+
+        <div class="database-tools">
+          <div class="field">
+            <label for="databaseSearch">Buscador de partidas</label>
+            <input id="databaseSearch" type="search" placeholder="Buscar hormigón, pintura, excavación..." />
+          </div>
+          <div class="field">
+            <label for="databaseCategoryFilter">Categoría</label>
+            <select id="databaseCategoryFilter"></select>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table aria-label="Base de precios">
+            <thead>
+              <tr>
+                <th style="width: 190px;">Categoría</th>
+                <th>Descripción</th>
+                <th style="width: 110px;">Unidad</th>
+                <th style="width: 170px;">Precio unitario</th>
+                <th style="width: 120px;">Agregar</th>
+              </tr>
+            </thead>
+            <tbody id="databaseBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="section" id="apusSection">
+        <div class="section-header">
+          <div>
+            <h2>Base de APUs</h2>
+            <p>Crea análisis de precio unitario en Supabase y agrégalos como partidas del presupuesto.</p>
+          </div>
+          <button class="btn btn-ghost" type="button" id="refreshApusBtn">Cargar APUs guardados</button>
+        </div>
+
+        <form class="apu-form" id="apuForm">
+          <div class="field">
+            <label for="apuCode">Código</label>
+            <input id="apuCode" type="text" autocomplete="off" />
+          </div>
+          <div class="field">
+            <label for="apuCategory">Categoría</label>
+            <select id="apuCategory"></select>
+          </div>
+          <div class="field wide">
+            <label for="apuName">Nombre</label>
+            <input id="apuName" type="text" autocomplete="off" />
+          </div>
+          <div class="field wide">
+            <label for="apuDescription">Descripción</label>
+            <input id="apuDescription" type="text" autocomplete="off" />
+          </div>
+          <div class="field">
+            <label for="apuUnit">Unidad</label>
+            <input id="apuUnit" type="text" autocomplete="off" />
+          </div>
+          <div class="field">
+            <label for="apuMaterialsCost">Materiales</label>
+            <input id="apuMaterialsCost" type="number" min="0" step="1" />
+          </div>
+          <div class="field">
+            <label for="apuLaborCost">Mano de obra</label>
+            <input id="apuLaborCost" type="number" min="0" step="1" />
+          </div>
+          <div class="field">
+            <label for="apuEquipmentCost">Equipos</label>
+            <input id="apuEquipmentCost" type="number" min="0" step="1" />
+          </div>
+          <div class="field">
+            <label for="apuSubcontractCost">Subcontrato</label>
+            <input id="apuSubcontractCost" type="number" min="0" step="1" />
+          </div>
+          <div class="field">
+            <label for="apuWastePercent">Pérdida %</label>
+            <input id="apuWastePercent" type="number" min="0" step="0.01" />
+          </div>
+          <div class="field">
+            <label for="apuUnitPrice">Precio unitario</label>
+            <input id="apuUnitPrice" type="number" min="0" step="1" />
+          </div>
+          <div class="field full">
+            <label for="apuNotes">Notas</label>
+            <textarea id="apuNotes"></textarea>
+          </div>
+          <div class="toolbar full">
+            <button class="btn btn-primary" type="submit" id="saveApuBtn">Crear APU</button>
+            <span class="badge" id="apuPriceHint">Precio calculado: $0</span>
+          </div>
+        </form>
+
+        <div class="database-tools">
+          <div class="field">
+            <label for="apuSearch">Buscar APUs</label>
+            <input id="apuSearch" type="search" placeholder="Buscar por nombre, código o categoría" />
+          </div>
+          <div class="field">
+            <label for="apuCategoryFilter">Categoría</label>
+            <select id="apuCategoryFilter"></select>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table aria-label="Base de APUs">
+            <thead>
+              <tr>
+                <th style="width: 100px;">Código</th>
+                <th style="width: 170px;">Categoría</th>
+                <th>Nombre</th>
+                <th style="width: 100px;">Unidad</th>
+                <th style="width: 150px;">Precio unitario</th>
+                <th style="width: 120px;">Agregar</th>
+              </tr>
+            </thead>
+            <tbody id="apusBody"></tbody>
+          </table>
         </div>
       </section>
     </main>
+  </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/three@0.149.0/build/three.min.js"></script>
-    <script src="./main.js"></script>
-  </body>
+  <section class="print-document" id="printDocument" aria-label="Vista imprimible"></section>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <div class="modal-backdrop" id="modalBackdrop" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal">
+      <h2 id="modalTitle">Confirmar acción</h2>
+      <p id="modalText">Esta acción modificará los datos del presupuesto.</p>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" type="button" id="modalCancel">Cancelar</button>
+        <button class="btn btn-danger" type="button" id="modalConfirm">Continuar</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    // Datos base del sistema.
+    const CATEGORIES = [
+      "Obras preliminares",
+      "Excavaciones",
+      "Hormigón",
+      "Enfierradura",
+      "Moldaje",
+      "Albañilería",
+      "Terminaciones",
+      "Instalaciones",
+      "Pintura",
+      "Aseo y entrega",
+      "Otros"
+    ];
+
+    const STORAGE_KEYS = {
+      budgets: "obraBudgets:v1",
+      priceDatabase: "obraPriceDatabase:v1",
+      sequence: "obraBudgetSequence:v1",
+      supabaseConfig: "obraSupabaseConfig:v1"
+    };
+
+    const SUPABASE_CONFIG = {
+      url: "https://agcifivmruadsvesnqnr.supabase.co",
+      key: "sb_publishable_hVQi5RgGc9BG-msKrRL1wg_9rtksZZM"
+    };
+
+    const DEFAULT_PRICE_DATABASE = [
+      { categoria: "Obras preliminares", descripcion: "Instalación de faena", unidad: "gl", precioUnitario: 350000 },
+      { categoria: "Obras preliminares", descripcion: "Trazado y niveles", unidad: "m2", precioUnitario: 1800 },
+      { categoria: "Obras preliminares", descripcion: "Cierre provisorio de obra", unidad: "ml", precioUnitario: 18500 },
+      { categoria: "Excavaciones", descripcion: "Excavación manual", unidad: "m3", precioUnitario: 18000 },
+      { categoria: "Excavaciones", descripcion: "Excavación con maquinaria", unidad: "m3", precioUnitario: 9500 },
+      { categoria: "Excavaciones", descripcion: "Retiro de escombros", unidad: "m3", precioUnitario: 25000 },
+      { categoria: "Hormigón", descripcion: "Hormigón G25 instalado", unidad: "m3", precioUnitario: 135000 },
+      { categoria: "Hormigón", descripcion: "Radier de hormigón", unidad: "m2", precioUnitario: 32000 },
+      { categoria: "Hormigón", descripcion: "Sobrecimiento de hormigón", unidad: "ml", precioUnitario: 42000 },
+      { categoria: "Enfierradura", descripcion: "Enfierradura instalada", unidad: "kg", precioUnitario: 1450 },
+      { categoria: "Enfierradura", descripcion: "Malla acma instalada", unidad: "m2", precioUnitario: 6200 },
+      { categoria: "Moldaje", descripcion: "Moldaje de muro", unidad: "m2", precioUnitario: 28000 },
+      { categoria: "Moldaje", descripcion: "Moldaje de losa", unidad: "m2", precioUnitario: 32000 },
+      { categoria: "Albañilería", descripcion: "Muro de ladrillo fiscal", unidad: "m2", precioUnitario: 38000 },
+      { categoria: "Albañilería", descripcion: "Muro de bloque de hormigón", unidad: "m2", precioUnitario: 34000 },
+      { categoria: "Terminaciones", descripcion: "Cerámica instalada", unidad: "m2", precioUnitario: 22000 },
+      { categoria: "Terminaciones", descripcion: "Porcelanato instalado", unidad: "m2", precioUnitario: 31000 },
+      { categoria: "Terminaciones", descripcion: "Piso flotante instalado", unidad: "m2", precioUnitario: 19000 },
+      { categoria: "Terminaciones", descripcion: "Cielo falso yeso cartón", unidad: "m2", precioUnitario: 24000 },
+      { categoria: "Terminaciones", descripcion: "Tabique yeso cartón", unidad: "m2", precioUnitario: 28000 },
+      { categoria: "Instalaciones", descripcion: "Punto eléctrico básico", unidad: "un", precioUnitario: 32000 },
+      { categoria: "Instalaciones", descripcion: "Punto de enchufe", unidad: "un", precioUnitario: 28000 },
+      { categoria: "Instalaciones", descripcion: "Punto de agua potable", unidad: "un", precioUnitario: 42000 },
+      { categoria: "Instalaciones", descripcion: "Punto de alcantarillado", unidad: "un", precioUnitario: 52000 },
+      { categoria: "Instalaciones", descripcion: "Artefacto sanitario instalado", unidad: "un", precioUnitario: 85000 },
+      { categoria: "Pintura", descripcion: "Pintura interior", unidad: "m2", precioUnitario: 4500 },
+      { categoria: "Pintura", descripcion: "Pintura exterior", unidad: "m2", precioUnitario: 6200 },
+      { categoria: "Pintura", descripcion: "Esmalte en puertas", unidad: "m2", precioUnitario: 7800 },
+      { categoria: "Aseo y entrega", descripcion: "Aseo final de obra", unidad: "m2", precioUnitario: 1800 },
+      { categoria: "Aseo y entrega", descripcion: "Entrega y retiro de protecciones", unidad: "gl", precioUnitario: 120000 }
+    ];
+
+    // Estado principal de la aplicación.
+    const refs = {};
+    let currentBudget = createEmptyBudget();
+    let priceDatabase = loadPriceDatabase();
+    let supabaseClient = null;
+    let currentSession = null;
+    let onlineBudgets = [];
+    let apus = [];
+    let localMode = false;
+    let modalAction = null;
+    let toastTimer = null;
+
+    // Inicio y conexión de eventos.
+    document.addEventListener("DOMContentLoaded", initApp);
+
+    function initApp() {
+      bindRefs();
+      populateCategorySelects();
+      bindEvents();
+      addItem();
+      renderBudget();
+      renderPriceDatabase();
+      renderSavedBudgets();
+      renderOnlineBudgets();
+      renderApus();
+      initializeSupabase();
+    }
+
+    function bindRefs() {
+      [
+        "authScreen", "appShell", "authForm", "authTitle", "authEmail", "authPassword", "authMessage",
+        "syncDot", "sessionLabel", "syncStatusText", "onlineBudgetsList",
+        "statBudgetNumber", "statItemsCount", "statDirectCost", "statFinalTotal",
+        "clientName", "projectName", "location", "budgetDate", "budgetNumber", "observations",
+        "projectWarning", "itemsBody", "itemSearch", "itemCategoryFilter", "visibleItemsLabel",
+        "generalExpensesPercent", "profitPercent", "discount", "ivaPercent",
+        "directCostValue", "generalExpensesValue", "profitValue", "discountValue",
+        "netSubtotalValue", "ivaValue", "finalTotalValue", "savedList",
+        "databaseSearch", "databaseCategoryFilter", "databaseBody", "printDocument",
+        "apuForm", "apuCode", "apuCategory", "apuName", "apuDescription", "apuUnit",
+        "apuMaterialsCost", "apuLaborCost", "apuEquipmentCost", "apuSubcontractCost",
+        "apuWastePercent", "apuUnitPrice", "apuNotes", "apuPriceHint", "apuSearch",
+        "apuCategoryFilter", "apusBody",
+        "toast", "modalBackdrop", "modalTitle", "modalText", "modalCancel", "modalConfirm"
+      ].forEach((id) => {
+        refs[id] = document.getElementById(id);
+      });
+    }
+
+    function bindEvents() {
+      document.querySelectorAll("[data-scroll]").forEach((button) => {
+        button.addEventListener("click", () => scrollToSection(button.dataset.scroll));
+      });
+
+      refs.authForm.addEventListener("submit", signIn);
+      document.getElementById("signupBtn").addEventListener("click", signUp);
+      document.getElementById("localModeBtn").addEventListener("click", enterLocalMode);
+      document.getElementById("logoutBtn").addEventListener("click", signOut);
+      document.getElementById("topNewBudget").addEventListener("click", newBudget);
+      document.getElementById("heroNewBudget").addEventListener("click", newBudget);
+      document.getElementById("saveBudgetBtn").addEventListener("click", saveBudget);
+      document.getElementById("saveLocalDraftBtn").addEventListener("click", saveLocalDraft);
+      document.getElementById("saveOnlineBtn").addEventListener("click", saveBudgetOnline);
+      document.getElementById("loadOnlineBtn").addEventListener("click", loadOnlineBudgets);
+      document.getElementById("syncBtn").addEventListener("click", syncOnline);
+      document.getElementById("migrateLocalBtn").addEventListener("click", requestMigrateLocalBudgets);
+      document.getElementById("refreshOnlineBtn").addEventListener("click", loadOnlineBudgets);
+      document.getElementById("clearBudgetBtn").addEventListener("click", requestClearBudget);
+      document.getElementById("addItemBtn").addEventListener("click", () => addItem());
+      document.getElementById("copySummaryBtn").addEventListener("click", copySummaryToClipboard);
+      document.getElementById("exportCsvBtn").addEventListener("click", exportCSV);
+      document.getElementById("printBtn").addEventListener("click", printBudget);
+      document.getElementById("pdfBtn").addEventListener("click", printBudget);
+      document.getElementById("refreshSavedBtn").addEventListener("click", renderSavedBudgets);
+      document.getElementById("resetDatabaseBtn").addEventListener("click", requestResetDatabase);
+
+      ["clientName", "projectName", "location", "budgetDate", "budgetNumber", "observations"].forEach((id) => {
+        refs[id].addEventListener("input", (event) => {
+          const fieldMap = {
+            clientName: "clientName",
+            projectName: "projectName",
+            location: "location",
+            budgetDate: "date",
+            budgetNumber: "number",
+            observations: "observations"
+          };
+          currentBudget[fieldMap[id]] = event.target.value;
+          validateBudget();
+          renderPrintDocument();
+          renderDashboardStats();
+        });
+      });
+
+      ["generalExpensesPercent", "profitPercent", "discount", "ivaPercent"].forEach((id) => {
+        refs[id].addEventListener("input", (event) => {
+          event.target.value = cleanNonNegative(event.target.value);
+          currentBudget[id] = toNumber(event.target.value);
+          renderTotals();
+        });
+      });
+
+      refs.itemsBody.addEventListener("input", handleItemInput);
+      refs.itemsBody.addEventListener("change", handleItemInput);
+      refs.itemsBody.addEventListener("click", handleItemClick);
+      refs.itemSearch.addEventListener("input", renderBudgetItems);
+      refs.itemCategoryFilter.addEventListener("change", renderBudgetItems);
+
+      refs.databaseBody.addEventListener("input", handleDatabaseInput);
+      refs.databaseBody.addEventListener("click", handleDatabaseClick);
+      refs.databaseSearch.addEventListener("input", renderPriceDatabase);
+      refs.databaseCategoryFilter.addEventListener("change", renderPriceDatabase);
+
+      refs.onlineBudgetsList.addEventListener("click", handleOnlineBudgetClick);
+      refs.savedList.addEventListener("click", handleSavedClick);
+      refs.apuForm.addEventListener("submit", createApu);
+      refs.apusBody.addEventListener("click", handleApuClick);
+      refs.apuSearch.addEventListener("input", renderApus);
+      refs.apuCategoryFilter.addEventListener("change", renderApus);
+      ["apuMaterialsCost", "apuLaborCost", "apuEquipmentCost", "apuSubcontractCost", "apuWastePercent", "apuUnitPrice"].forEach((id) => {
+        refs[id].addEventListener("input", updateApuPriceHint);
+      });
+      refs.modalCancel.addEventListener("click", closeModal);
+      refs.modalBackdrop.addEventListener("click", (event) => {
+        if (event.target === refs.modalBackdrop) closeModal();
+      });
+      refs.modalConfirm.addEventListener("click", () => {
+        if (typeof modalAction === "function") modalAction();
+        closeModal();
+      });
+    }
+
+    async function initializeSupabase() {
+      if (!isSupabaseConfigured()) {
+        setAuthMessage("Configura SUPABASE_CONFIG.url y SUPABASE_CONFIG.key dentro de index.html.");
+        renderSessionState();
+        setSyncStatus("Supabase no configurado. Puedes usar modo local como respaldo.", "error");
+        return;
+      }
+
+      if (!window.supabase) {
+        setAuthMessage("No se pudo cargar el cliente de Supabase. Revisa tu conexión a internet.");
+        renderSessionState();
+        setSyncStatus("Cliente de Supabase no disponible.", "error");
+        return;
+      }
+
+      supabaseClient = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.key);
+      const { data, error } = await supabaseClient.auth.getSession();
+
+      if (error) {
+        setAuthMessage(error.message);
+        setSyncStatus("Error al revisar la sesión.", "error");
+      } else {
+        currentSession = data.session;
+      }
+
+      supabaseClient.auth.onAuthStateChange((_event, session) => {
+        currentSession = session;
+        localMode = false;
+        renderSessionState();
+        if (session) {
+          loadOnlineBudgets();
+          loadApus();
+        }
+      });
+
+      renderSessionState();
+      if (currentSession) {
+        await loadOnlineBudgets();
+        await loadApus();
+      }
+    }
+
+    function isSupabaseConfigured() {
+      return SUPABASE_CONFIG.url.startsWith("https://")
+        && SUPABASE_CONFIG.url.includes(".supabase.co")
+        && !SUPABASE_CONFIG.url.includes("TU-PROYECTO")
+        && SUPABASE_CONFIG.key
+        && !SUPABASE_CONFIG.key.includes("TU_SUPABASE");
+    }
+
+    function renderSessionState() {
+      const hasSession = Boolean(currentSession);
+      const canUseApp = hasSession || localMode;
+      refs.authScreen.classList.toggle("is-visible", !canUseApp);
+      refs.appShell.classList.toggle("is-locked", !canUseApp);
+
+      if (hasSession) {
+        const email = currentSession.user.email || "usuario";
+        refs.sessionLabel.textContent = email;
+        setAuthMessage("");
+        setSyncStatus("Conectado a Supabase.", "online");
+      } else if (localMode) {
+        refs.sessionLabel.textContent = "Modo local";
+        setSyncStatus("Trabajando solo con localStorage. Usa Supabase para sincronizar dispositivos.", "idle");
+      } else if (!isSupabaseConfigured()) {
+        refs.sessionLabel.textContent = "Sin conexión online";
+        setAuthMessage("Configura Supabase o entra en modo local.");
+      } else {
+        refs.sessionLabel.textContent = "Sin sesión";
+        setAuthMessage("Inicia sesión o crea una cuenta para guardar online.");
+      }
+    }
+
+    function setAuthMessage(message) {
+      refs.authMessage.textContent = message;
+      refs.authMessage.classList.toggle("is-visible", Boolean(message));
+    }
+
+    function setSyncStatus(message, state = "idle") {
+      refs.syncStatusText.textContent = message;
+      refs.syncDot.classList.toggle("is-online", state === "online" || state === "saved");
+      refs.syncDot.classList.toggle("is-error", state === "error");
+    }
+
+    async function signIn(event) {
+      event.preventDefault();
+      if (!requireSupabaseClient()) return;
+      setAuthMessage("Iniciando sesión...");
+      const { data, error } = await supabaseClient.auth.signInWithPassword({
+        email: refs.authEmail.value.trim(),
+        password: refs.authPassword.value
+      });
+
+      if (error) {
+        setAuthMessage(error.message);
+        setSyncStatus("Error al iniciar sesión.", "error");
+        return;
+      }
+
+      currentSession = data.session;
+      localMode = false;
+      refs.authPassword.value = "";
+      renderSessionState();
+      showToast("Sesión iniciada.");
+      await loadOnlineBudgets();
+      await loadApus();
+    }
+
+    async function signUp() {
+      if (!requireSupabaseClient()) return;
+      const email = refs.authEmail.value.trim();
+      const password = refs.authPassword.value;
+
+      if (!email || password.length < 6) {
+        setAuthMessage("Ingresa correo y una contraseña de al menos 6 caracteres.");
+        return;
+      }
+
+      setAuthMessage("Creando cuenta...");
+      const { data, error } = await supabaseClient.auth.signUp({ email, password });
+
+      if (error) {
+        setAuthMessage(error.message);
+        setSyncStatus("Error al crear cuenta.", "error");
+        return;
+      }
+
+      currentSession = data.session;
+      refs.authPassword.value = "";
+      renderSessionState();
+      showToast(currentSession ? "Cuenta creada y sesión iniciada." : "Cuenta creada. Revisa tu correo si Supabase pide confirmación.");
+    }
+
+    async function signOut() {
+      if (localMode && !currentSession) {
+        localMode = false;
+        renderSessionState();
+        showToast("Saliste del modo local.");
+        return;
+      }
+
+      if (supabaseClient) await supabaseClient.auth.signOut();
+      currentSession = null;
+      localMode = false;
+      onlineBudgets = [];
+      apus = [];
+      renderOnlineBudgets();
+      renderApus();
+      renderSessionState();
+      showToast("Sesión cerrada.");
+    }
+
+    function enterLocalMode() {
+      localMode = true;
+      currentSession = null;
+      renderSessionState();
+      showToast("Modo local activado. Los datos no se sincronizarán.");
+    }
+
+    function requireSupabaseClient() {
+      if (!isSupabaseConfigured()) {
+        setAuthMessage("Primero pega tu Supabase URL y publishable/anon key en SUPABASE_CONFIG.");
+        setSyncStatus("Supabase no configurado.", "error");
+        return false;
+      }
+      if (!supabaseClient) {
+        setAuthMessage("Supabase todavía no está listo. Recarga la página o revisa la conexión.");
+        return false;
+      }
+      return true;
+    }
+
+    function requireOnlineSession() {
+      if (!requireSupabaseClient()) return false;
+      if (!currentSession) {
+        showToast("Inicia sesión para usar Supabase.");
+        setSyncStatus("Sin sesión online.", "error");
+        renderSessionState();
+        return false;
+      }
+      return true;
+    }
+
+    async function syncOnline() {
+      if (!requireOnlineSession()) return;
+      await saveBudgetOnline();
+      await loadOnlineBudgets();
+      await loadApus();
+      setSyncStatus("Sincronización completada.", "saved");
+    }
+
+    async function saveBudgetOnline() {
+      if (!validateBudget()) {
+        refs.projectName.focus();
+        showToast("Completa el nombre del proyecto antes de guardar online.");
+        return;
+      }
+      if (!requireSupabaseClient()) return;
+      if (!currentSession) {
+        showToast("Para guardar en tu cuenta, inicia sesión.");
+        setSyncStatus("Para guardar en tu cuenta, inicia sesión.", "error");
+        renderSessionState();
+        return;
+      }
+
+      setSyncStatus("Guardando presupuesto online...", "idle");
+      try {
+        const saved = await saveBudgetRecordOnline(currentBudget);
+        currentBudget.onlineId = saved.id;
+        currentBudget.updatedAt = saved.updated_at || new Date().toISOString();
+        await loadOnlineBudgets();
+        setSyncStatus("Presupuesto guardado online correctamente.", "saved");
+        showToast("Presupuesto guardado online correctamente.");
+      } catch (error) {
+        setSyncStatus(error.message, "error");
+        openModal(
+          "No se pudo guardar online",
+          "Falló el guardado en Supabase. Puedes guardar un borrador local en este navegador mientras revisas la conexión.",
+          "Guardar borrador local",
+          () => persistLocalBudget(true)
+        );
+      }
+    }
+
+    async function saveBudgetRecordOnline(budget) {
+      const userId = currentSession.user.id;
+      const payload = budgetToSupabasePayload(budget, userId);
+      const existingOnlineId = budget.onlineId || null;
+      let response;
+
+      if (existingOnlineId) {
+        response = await supabaseClient
+          .from("budgets")
+          .update(payload)
+          .eq("id", existingOnlineId)
+          .select()
+          .single();
+      } else {
+        response = await supabaseClient
+          .from("budgets")
+          .insert(payload)
+          .select()
+          .single();
+      }
+
+      if (response.error) throw response.error;
+      const savedBudget = response.data;
+
+      const deleteResponse = await supabaseClient
+        .from("budget_items")
+        .delete()
+        .eq("budget_id", savedBudget.id)
+        .eq("user_id", userId);
+      if (deleteResponse.error) throw deleteResponse.error;
+
+      const itemRows = budget.items.map((item, index) => budgetItemToSupabaseRow(item, savedBudget.id, userId, index));
+      if (itemRows.length > 0) {
+        const insertResponse = await supabaseClient.from("budget_items").insert(itemRows);
+        if (insertResponse.error) throw insertResponse.error;
+      }
+
+      return savedBudget;
+    }
+
+    async function loadOnlineBudgets() {
+      if (!requireOnlineSession()) return;
+      setSyncStatus("Cargando presupuestos online...", "idle");
+      const { data, error } = await supabaseClient
+        .from("budgets")
+        .select("*")
+        .order("updated_at", { ascending: false });
+
+      if (error) {
+        setSyncStatus(error.message, "error");
+        showToast("No se pudieron cargar los presupuestos online.");
+        return;
+      }
+
+      onlineBudgets = data || [];
+      renderOnlineBudgets();
+      setSyncStatus("Presupuestos online cargados.", "online");
+    }
+
+    function renderOnlineBudgets() {
+      if (!refs.onlineBudgetsList) return;
+      if (!currentSession) {
+        refs.onlineBudgetsList.innerHTML = `<div class="empty-row">Inicia sesión para ver presupuestos online.</div>`;
+        return;
+      }
+      if (onlineBudgets.length === 0) {
+        refs.onlineBudgetsList.innerHTML = `<div class="empty-row">No hay presupuestos online para este usuario.</div>`;
+        return;
+      }
+
+      refs.onlineBudgetsList.innerHTML = onlineBudgets.map((budget) => `
+        <article class="saved-card">
+          <div>
+            <h3>${escapeHTML(budget.project_name || "Proyecto sin nombre")}</h3>
+            <div class="saved-meta">
+              <span>${escapeHTML(budget.budget_number || "-")}</span>
+              <span>${escapeHTML(budget.client_name || "Sin cliente")}</span>
+              <span>${formatDate(budget.budget_date)}</span>
+              <strong>${formatCurrency(budget.total_final)}</strong>
+            </div>
+          </div>
+          <div class="toolbar">
+            <button class="btn btn-primary" type="button" data-open-online-id="${budget.id}">Abrir</button>
+            <button class="btn btn-ghost" type="button" data-copy-online-id="${budget.id}">Duplicar</button>
+            <button class="btn btn-danger" type="button" data-delete-online-id="${budget.id}">Eliminar</button>
+          </div>
+        </article>
+      `).join("");
+    }
+
+    function handleOnlineBudgetClick(event) {
+      const openId = event.target.dataset.openOnlineId;
+      const copyId = event.target.dataset.copyOnlineId;
+      const deleteId = event.target.dataset.deleteOnlineId;
+
+      if (openId) openOnlineBudget(openId);
+      if (copyId) duplicateOnlineBudget(copyId);
+      if (deleteId) {
+        openModal(
+          "Eliminar presupuesto online",
+          "Se eliminará este presupuesto y sus partidas desde Supabase.",
+          "Eliminar",
+          () => deleteOnlineBudget(deleteId)
+        );
+      }
+    }
+
+    async function openOnlineBudget(id) {
+      if (!requireOnlineSession()) return;
+      setSyncStatus("Abriendo presupuesto online...", "idle");
+      const budgetResponse = await supabaseClient.from("budgets").select("*").eq("id", id).single();
+      if (budgetResponse.error) {
+        setSyncStatus(budgetResponse.error.message, "error");
+        return;
+      }
+
+      const itemsResponse = await supabaseClient
+        .from("budget_items")
+        .select("*")
+        .eq("budget_id", id)
+        .order("item_order", { ascending: true });
+      if (itemsResponse.error) {
+        setSyncStatus(itemsResponse.error.message, "error");
+        return;
+      }
+
+      currentBudget = supabaseBudgetToLocal(budgetResponse.data, itemsResponse.data || []);
+      renderBudget();
+      scrollToSection("#budgetSection");
+      setSyncStatus("Presupuesto online abierto.", "online");
+      showToast("Presupuesto cargado desde Supabase.");
+    }
+
+    async function duplicateOnlineBudget(id) {
+      await openOnlineBudget(id);
+      currentBudget.id = null;
+      currentBudget.onlineId = null;
+      currentBudget.number = nextBudgetNumber();
+      currentBudget.date = todayISO();
+      currentBudget.projectName = `${currentBudget.projectName || "Presupuesto"} (copia)`;
+      renderBudget();
+      showToast("Copia creada. Guarda online para subirla a Supabase.");
+    }
+
+    async function deleteOnlineBudget(id) {
+      if (!requireOnlineSession()) return;
+      const { error } = await supabaseClient.from("budgets").delete().eq("id", id);
+      if (error) {
+        setSyncStatus(error.message, "error");
+        showToast("No se pudo eliminar online.");
+        return;
+      }
+      if (currentBudget.onlineId === id) currentBudget.onlineId = null;
+      await loadOnlineBudgets();
+      showToast("Presupuesto online eliminado.");
+    }
+
+    function requestMigrateLocalBudgets() {
+      openModal(
+        "Migrar datos locales a Supabase",
+        "Se subirán los borradores locales guardados en este navegador al usuario actual de Supabase.",
+        "Migrar",
+        migrateLocalBudgetsToSupabase
+      );
+    }
+
+    async function migrateLocalBudgetsToSupabase() {
+      if (!requireOnlineSession()) return;
+      const localBudgets = getSavedBudgets();
+      if (localBudgets.length === 0) {
+        showToast("No hay borradores locales para migrar.");
+        return;
+      }
+
+      setSyncStatus(`Migrando ${localBudgets.length} borradores locales...`, "idle");
+      try {
+        const migrated = [];
+        for (const budget of localBudgets) {
+          const saved = await saveBudgetRecordOnline({ ...budget, onlineId: budget.onlineId || null });
+          migrated.push({ ...budget, onlineId: saved.id });
+        }
+        localStorage.setItem(STORAGE_KEYS.budgets, JSON.stringify(migrated));
+        renderSavedBudgets();
+        await loadOnlineBudgets();
+        setSyncStatus("Migración completada.", "saved");
+        showToast("Datos locales migrados a Supabase.");
+      } catch (error) {
+        setSyncStatus(error.message, "error");
+        showToast("Error al migrar datos locales.");
+      }
+    }
+
+    async function createApu(event) {
+      event.preventDefault();
+      if (!requireOnlineSession()) return;
+      const apu = getApuFormData();
+      if (!apu.name.trim()) {
+        showToast("Ingresa un nombre para el APU.");
+        refs.apuName.focus();
+        return;
+      }
+
+      const { error } = await supabaseClient.from("apus").insert({
+        user_id: currentSession.user.id,
+        code: apu.code,
+        category: apu.category,
+        name: apu.name,
+        description: apu.description,
+        unit: apu.unit,
+        materials_cost: apu.materials_cost,
+        labor_cost: apu.labor_cost,
+        equipment_cost: apu.equipment_cost,
+        subcontract_cost: apu.subcontract_cost,
+        waste_percent: apu.waste_percent,
+        unit_price: apu.unit_price,
+        notes: apu.notes
+      });
+
+      if (error) {
+        setSyncStatus(error.message, "error");
+        showToast("No se pudo crear el APU.");
+        return;
+      }
+
+      refs.apuForm.reset();
+      updateApuPriceHint();
+      await loadApus();
+      showToast("APU creado en Supabase.");
+    }
+
+    async function loadApus() {
+      if (!requireOnlineSession()) return;
+      const { data, error } = await supabaseClient
+        .from("apus")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        setSyncStatus(error.message, "error");
+        return;
+      }
+
+      apus = data || [];
+      renderApus();
+    }
+
+    function renderApus() {
+      if (!refs.apusBody) return;
+      if (!currentSession) {
+        refs.apusBody.innerHTML = `<tr><td class="empty-row" colspan="6">Inicia sesión para cargar APUs online.</td></tr>`;
+        return;
+      }
+
+      const term = normalizeText(refs.apuSearch.value);
+      const category = refs.apuCategoryFilter.value;
+      const visibleApus = apus.filter((apu) => {
+        const matchesCategory = !category || apu.category === category;
+        const searchable = normalizeText(`${apu.code} ${apu.category} ${apu.name} ${apu.description} ${apu.unit}`);
+        return matchesCategory && (!term || searchable.includes(term));
+      });
+
+      if (visibleApus.length === 0) {
+        refs.apusBody.innerHTML = `<tr><td class="empty-row" colspan="6">No hay APUs para mostrar.</td></tr>`;
+        return;
+      }
+
+      refs.apusBody.innerHTML = visibleApus.map((apu) => `
+        <tr>
+          <td>${escapeHTML(apu.code || "-")}</td>
+          <td>${escapeHTML(apu.category || "-")}</td>
+          <td>${escapeHTML(apu.name || "-")}</td>
+          <td>${escapeHTML(apu.unit || "-")}</td>
+          <td class="num"><strong>${formatCurrency(apu.unit_price)}</strong></td>
+          <td><button class="btn btn-primary" type="button" data-add-apu-id="${apu.id}">Agregar</button></td>
+        </tr>
+      `).join("");
+    }
+
+    function handleApuClick(event) {
+      const apuId = event.target.dataset.addApuId;
+      if (!apuId) return;
+      const apu = apus.find((item) => item.id === apuId);
+      if (!apu) return;
+      addItem({
+        categoria: apu.category || "Otros",
+        descripcion: apu.name || apu.description || "",
+        unidad: apu.unit || "",
+        cantidad: 1,
+        precioUnitario: apu.unit_price || 0
+      });
+      showToast("APU agregado como partida.");
+      scrollToSection("#itemsSection");
+    }
+
+    function getApuFormData() {
+      const baseCost = toNumber(refs.apuMaterialsCost.value)
+        + toNumber(refs.apuLaborCost.value)
+        + toNumber(refs.apuEquipmentCost.value)
+        + toNumber(refs.apuSubcontractCost.value);
+      const calculatedPrice = baseCost * (1 + toNumber(refs.apuWastePercent.value) / 100);
+      const explicitPrice = toNumber(refs.apuUnitPrice.value);
+
+      return {
+        code: refs.apuCode.value.trim(),
+        category: refs.apuCategory.value,
+        name: refs.apuName.value.trim(),
+        description: refs.apuDescription.value.trim(),
+        unit: refs.apuUnit.value.trim(),
+        materials_cost: toNumber(refs.apuMaterialsCost.value),
+        labor_cost: toNumber(refs.apuLaborCost.value),
+        equipment_cost: toNumber(refs.apuEquipmentCost.value),
+        subcontract_cost: toNumber(refs.apuSubcontractCost.value),
+        waste_percent: toNumber(refs.apuWastePercent.value),
+        unit_price: explicitPrice || calculatedPrice,
+        notes: refs.apuNotes.value.trim()
+      };
+    }
+
+    function updateApuPriceHint() {
+      if (!refs.apuPriceHint) return;
+      const apu = getApuFormData();
+      refs.apuPriceHint.textContent = `Precio calculado: ${formatCurrency(apu.unit_price)}`;
+    }
+
+    // Crea un presupuesto limpio con fecha y número automáticos.
+    function createEmptyBudget() {
+      return {
+        id: null,
+        onlineId: null,
+        clientName: "",
+        projectName: "",
+        location: "",
+        date: todayISO(),
+        number: nextBudgetNumber(),
+        observations: "",
+        items: [],
+        generalExpensesPercent: 10,
+        profitPercent: 15,
+        discount: 0,
+        ivaPercent: 19,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+    }
+
+    function todayISO() {
+      const today = new Date();
+      const localDate = new Date(today.getTime() - today.getTimezoneOffset() * 60000);
+      return localDate.toISOString().slice(0, 10);
+    }
+
+    function nextBudgetNumber() {
+      const year = new Date().getFullYear();
+      const key = `${STORAGE_KEYS.sequence}:${year}`;
+      const next = Number(localStorage.getItem(key) || "0") + 1;
+      localStorage.setItem(key, String(next));
+      return `P-${year}-${String(next).padStart(4, "0")}`;
+    }
+
+    function populateCategorySelects() {
+      const options = [`<option value="">Todas las categorías</option>`]
+        .concat(CATEGORIES.map((category) => `<option value="${escapeHTML(category)}">${escapeHTML(category)}</option>`))
+        .join("");
+      refs.itemCategoryFilter.innerHTML = options;
+      refs.databaseCategoryFilter.innerHTML = options;
+      refs.apuCategoryFilter.innerHTML = options;
+      refs.apuCategory.innerHTML = CATEGORIES
+        .map((category) => `<option value="${escapeHTML(category)}">${escapeHTML(category)}</option>`)
+        .join("");
+    }
+
+    // Renderiza el formulario, las partidas, los totales y la vista imprimible.
+    function renderBudget() {
+      refs.clientName.value = currentBudget.clientName;
+      refs.projectName.value = currentBudget.projectName;
+      refs.location.value = currentBudget.location;
+      refs.budgetDate.value = currentBudget.date;
+      refs.budgetNumber.value = currentBudget.number;
+      refs.observations.value = currentBudget.observations;
+      refs.generalExpensesPercent.value = currentBudget.generalExpensesPercent;
+      refs.profitPercent.value = currentBudget.profitPercent;
+      refs.discount.value = currentBudget.discount;
+      refs.ivaPercent.value = currentBudget.ivaPercent;
+      renderBudgetItems();
+      renderTotals();
+      validateBudget();
+    }
+
+    function renderBudgetItems() {
+      const visibleItems = getVisibleBudgetItems();
+      refs.visibleItemsLabel.textContent = `${visibleItems.length} de ${currentBudget.items.length} partidas`;
+
+      if (visibleItems.length === 0) {
+        refs.itemsBody.innerHTML = `<tr><td class="empty-row" colspan="8">No hay partidas para mostrar.</td></tr>`;
+        renderTotals();
+        return;
+      }
+
+      refs.itemsBody.innerHTML = visibleItems.map(({ item, index }) => {
+        const subtotal = toNumber(item.cantidad) * toNumber(item.precioUnitario);
+        return `
+          <tr>
+            <td><strong>${index + 1}</strong></td>
+            <td>
+              <select data-index="${index}" data-field="categoria">
+                ${CATEGORIES.map((category) => `<option value="${escapeHTML(category)}" ${item.categoria === category ? "selected" : ""}>${escapeHTML(category)}</option>`).join("")}
+              </select>
+            </td>
+            <td><input data-index="${index}" data-field="descripcion" type="text" value="${escapeAttribute(item.descripcion)}" placeholder="Descripción de la partida" /></td>
+            <td><input data-index="${index}" data-field="unidad" type="text" value="${escapeAttribute(item.unidad)}" placeholder="m2" /></td>
+            <td><input data-index="${index}" data-field="cantidad" type="number" min="0" step="0.01" value="${escapeAttribute(item.cantidad)}" /></td>
+            <td><input data-index="${index}" data-field="precioUnitario" type="number" min="0" step="1" value="${escapeAttribute(item.precioUnitario)}" /></td>
+            <td class="num" data-subtotal="${index}"><strong>${formatCurrency(subtotal)}</strong></td>
+            <td><button class="btn btn-danger icon-btn" type="button" data-remove-index="${index}" title="Eliminar partida" aria-label="Eliminar partida">×</button></td>
+          </tr>
+        `;
+      }).join("");
+
+      renderTotals();
+    }
+
+    function getVisibleBudgetItems() {
+      const term = normalizeText(refs.itemSearch.value);
+      const category = refs.itemCategoryFilter.value;
+
+      return currentBudget.items
+        .map((item, index) => ({ item, index }))
+        .filter(({ item }) => {
+          const matchesCategory = !category || item.categoria === category;
+          const searchable = normalizeText(`${item.categoria} ${item.descripcion} ${item.unidad}`);
+          return matchesCategory && (!term || searchable.includes(term));
+        });
+    }
+
+    // Agrega una partida manual o proveniente de la base de precios.
+    function addItem(item = {}) {
+      const normalizedItem = {
+        id: item.id || uniqueId(),
+        categoria: item.categoria || "Otros",
+        descripcion: item.descripcion || "",
+        unidad: item.unidad || "",
+        cantidad: toNumber(item.cantidad ?? 1),
+        precioUnitario: toNumber(item.precioUnitario ?? 0)
+      };
+      currentBudget.items.push(normalizedItem);
+      renderBudgetItems();
+      renderTotals();
+    }
+
+    function removeItem(index) {
+      currentBudget.items.splice(index, 1);
+      renderBudgetItems();
+      showToast("Partida eliminada.");
+    }
+
+    function handleItemInput(event) {
+      const target = event.target;
+      const index = Number(target.dataset.index);
+      const field = target.dataset.field;
+      if (!field || Number.isNaN(index) || !currentBudget.items[index]) return;
+
+      if (field === "cantidad" || field === "precioUnitario") {
+        target.value = cleanNonNegative(target.value);
+        currentBudget.items[index][field] = toNumber(target.value);
+        updateRowSubtotal(index);
+      } else {
+        currentBudget.items[index][field] = target.value;
+      }
+
+      renderTotals();
+    }
+
+    function handleItemClick(event) {
+      const removeIndex = event.target.dataset.removeIndex;
+      if (removeIndex === undefined) return;
+      removeItem(Number(removeIndex));
+    }
+
+    function updateRowSubtotal(index) {
+      const subtotalCell = refs.itemsBody.querySelector(`[data-subtotal="${index}"]`);
+      if (!subtotalCell) return;
+      const item = currentBudget.items[index];
+      const subtotal = toNumber(item.cantidad) * toNumber(item.precioUnitario);
+      subtotalCell.innerHTML = `<strong>${formatCurrency(subtotal)}</strong>`;
+    }
+
+    // Aplica las fórmulas solicitadas para costo directo, cargos, IVA y total.
+    function calculateTotals() {
+      const costoDirecto = currentBudget.items.reduce((sum, item) => {
+        return sum + toNumber(item.cantidad) * toNumber(item.precioUnitario);
+      }, 0);
+      const gastosGenerales = costoDirecto * (toNumber(currentBudget.generalExpensesPercent) / 100);
+      const utilidad = costoDirecto * (toNumber(currentBudget.profitPercent) / 100);
+      const descuento = Math.min(toNumber(currentBudget.discount), costoDirecto + gastosGenerales + utilidad);
+      const subtotalNeto = Math.max(0, costoDirecto + gastosGenerales + utilidad - descuento);
+      const iva = subtotalNeto * (toNumber(currentBudget.ivaPercent) / 100);
+      const totalFinal = subtotalNeto + iva;
+
+      return { costoDirecto, gastosGenerales, utilidad, descuento, subtotalNeto, iva, totalFinal };
+    }
+
+    function renderTotals() {
+      const totals = calculateTotals();
+      refs.directCostValue.textContent = formatCurrency(totals.costoDirecto);
+      refs.generalExpensesValue.textContent = formatCurrency(totals.gastosGenerales);
+      refs.profitValue.textContent = formatCurrency(totals.utilidad);
+      refs.discountValue.textContent = totals.descuento > 0 ? `-${formatCurrency(totals.descuento)}` : formatCurrency(0);
+      refs.netSubtotalValue.textContent = formatCurrency(totals.subtotalNeto);
+      refs.ivaValue.textContent = formatCurrency(totals.iva);
+      refs.finalTotalValue.textContent = formatCurrency(totals.totalFinal);
+      renderDashboardStats();
+      renderPrintDocument();
+    }
+
+    function renderDashboardStats() {
+      const totals = calculateTotals();
+      refs.statBudgetNumber.textContent = currentBudget.number || "-";
+      refs.statItemsCount.textContent = String(currentBudget.items.length);
+      refs.statDirectCost.textContent = formatCurrency(totals.costoDirecto);
+      refs.statFinalTotal.textContent = formatCurrency(totals.totalFinal);
+    }
+
+    function validateBudget() {
+      const missingProject = currentBudget.projectName.trim() === "";
+      refs.projectWarning.classList.toggle("is-visible", missingProject);
+      refs.projectName.classList.toggle("is-invalid", missingProject);
+      return !missingProject;
+    }
+
+    // El guardado principal usa Supabase cuando hay sesión iniciada.
+    async function saveBudget() {
+      if (!validateBudget()) {
+        refs.projectName.focus();
+        showToast("Completa el nombre del proyecto antes de guardar.");
+        return;
+      }
+
+      if (!currentSession) {
+        showToast("Para guardar en tu cuenta, inicia sesión.");
+        setSyncStatus("Para guardar en tu cuenta, inicia sesión.", "error");
+        return;
+      }
+
+      await saveBudgetOnline();
+    }
+
+    function saveLocalDraft() {
+      if (!validateBudget()) {
+        refs.projectName.focus();
+        showToast("Completa el nombre del proyecto antes de guardar un borrador.");
+        return;
+      }
+
+      persistLocalBudget(true);
+    }
+
+    function persistLocalBudget(showMessage = true) {
+      const budgets = getSavedBudgets();
+      const now = new Date().toISOString();
+      const budgetToSave = {
+        ...clone(currentBudget),
+        id: currentBudget.id || uniqueId(),
+        updatedAt: now,
+        createdAt: currentBudget.createdAt || now
+      };
+
+      const existingIndex = budgets.findIndex((budget) => budget.id === budgetToSave.id);
+      if (existingIndex >= 0) {
+        budgets[existingIndex] = budgetToSave;
+      } else {
+        budgets.unshift(budgetToSave);
+      }
+
+      localStorage.setItem(STORAGE_KEYS.budgets, JSON.stringify(budgets));
+      currentBudget = clone(budgetToSave);
+      renderSavedBudgets();
+      renderBudget();
+      if (showMessage) showToast("Borrador local guardado en este navegador.");
+    }
+
+    function loadBudget(id) {
+      const budget = getSavedBudgets().find((item) => item.id === id);
+      if (!budget) {
+        showToast("No se encontró el presupuesto seleccionado.");
+        return;
+      }
+      currentBudget = clone(budget);
+      renderBudget();
+      scrollToSection("#budgetSection");
+      showToast("Borrador local cargado.");
+    }
+
+    function deleteBudget(id) {
+      const nextBudgets = getSavedBudgets().filter((budget) => budget.id !== id);
+      localStorage.setItem(STORAGE_KEYS.budgets, JSON.stringify(nextBudgets));
+      if (currentBudget.id === id) currentBudget.id = null;
+      renderSavedBudgets();
+      showToast("Borrador local eliminado.");
+    }
+
+    function duplicateBudget(id) {
+      const budget = getSavedBudgets().find((item) => item.id === id);
+      if (!budget) return;
+      currentBudget = {
+        ...clone(budget),
+        id: null,
+        onlineId: null,
+        number: nextBudgetNumber(),
+        date: todayISO(),
+        projectName: `${budget.projectName || "Presupuesto"} (copia)`,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      renderBudget();
+      scrollToSection("#budgetSection");
+      showToast("Copia creada. Revísala y guárdala cuando esté lista.");
+    }
+
+    function renderSavedBudgets() {
+      const budgets = getSavedBudgets();
+      if (budgets.length === 0) {
+        refs.savedList.innerHTML = `<div class="empty-row">Todavía no hay borradores locales.</div>`;
+        return;
+      }
+
+      refs.savedList.innerHTML = budgets.map((budget) => {
+        const totals = calculateTotalsForBudget(budget);
+        return `
+          <article class="saved-card">
+            <div>
+              <h3>${escapeHTML(budget.projectName || "Proyecto sin nombre")}</h3>
+              <div class="saved-meta">
+                <span>${escapeHTML(budget.number || "-")}</span>
+                <span>${escapeHTML(budget.clientName || "Sin cliente")}</span>
+                <span>${formatDate(budget.date)}</span>
+                <strong>${formatCurrency(totals.totalFinal)}</strong>
+              </div>
+            </div>
+            <div class="toolbar">
+              <button class="btn btn-primary" type="button" data-load-id="${budget.id}">Cargar</button>
+              <button class="btn btn-ghost" type="button" data-duplicate-id="${budget.id}">Duplicar</button>
+              <button class="btn btn-danger" type="button" data-delete-id="${budget.id}">Eliminar</button>
+            </div>
+          </article>
+        `;
+      }).join("");
+    }
+
+    function handleSavedClick(event) {
+      const loadId = event.target.dataset.loadId;
+      const duplicateId = event.target.dataset.duplicateId;
+      const deleteId = event.target.dataset.deleteId;
+
+      if (loadId) loadBudget(loadId);
+      if (duplicateId) duplicateBudget(duplicateId);
+      if (deleteId) {
+        openModal(
+          "Eliminar borrador local",
+          "El borrador local se borrará de este navegador.",
+          "Eliminar",
+          () => deleteBudget(deleteId)
+        );
+      }
+    }
+
+    // Renderiza la base referencial de precios y permite editar sus valores.
+    function renderPriceDatabase() {
+      const term = normalizeText(refs.databaseSearch.value);
+      const category = refs.databaseCategoryFilter.value;
+      const visibleRows = priceDatabase
+        .map((item, index) => ({ item, index }))
+        .filter(({ item }) => {
+          const matchesCategory = !category || item.categoria === category;
+          const searchable = normalizeText(`${item.categoria} ${item.descripcion} ${item.unidad}`);
+          return matchesCategory && (!term || searchable.includes(term));
+        });
+
+      if (visibleRows.length === 0) {
+        refs.databaseBody.innerHTML = `<tr><td class="empty-row" colspan="5">No hay partidas que coincidan con la búsqueda.</td></tr>`;
+        return;
+      }
+
+      refs.databaseBody.innerHTML = visibleRows.map(({ item, index }) => `
+        <tr>
+          <td>${escapeHTML(item.categoria)}</td>
+          <td>${escapeHTML(item.descripcion)}</td>
+          <td>${escapeHTML(item.unidad)}</td>
+          <td><input data-db-index="${index}" type="number" min="0" step="1" value="${escapeAttribute(item.precioUnitario)}" aria-label="Precio unitario de ${escapeAttribute(item.descripcion)}" /></td>
+          <td><button class="btn btn-primary" type="button" data-add-db-index="${index}">Agregar</button></td>
+        </tr>
+      `).join("");
+    }
+
+    function handleDatabaseInput(event) {
+      const index = Number(event.target.dataset.dbIndex);
+      if (Number.isNaN(index) || !priceDatabase[index]) return;
+      event.target.value = cleanNonNegative(event.target.value);
+      priceDatabase[index].precioUnitario = toNumber(event.target.value);
+      savePriceDatabase();
+    }
+
+    function handleDatabaseClick(event) {
+      const index = Number(event.target.dataset.addDbIndex);
+      if (Number.isNaN(index)) return;
+      addItemFromDatabase(index);
+    }
+
+    function addItemFromDatabase(index) {
+      const baseItem = priceDatabase[index];
+      if (!baseItem) return;
+      addItem({
+        categoria: baseItem.categoria,
+        descripcion: baseItem.descripcion,
+        unidad: baseItem.unidad,
+        cantidad: 1,
+        precioUnitario: baseItem.precioUnitario
+      });
+      showToast("Partida agregada al presupuesto.");
+    }
+
+    function requestResetDatabase() {
+      openModal(
+        "Restaurar base inicial",
+        "Se reemplazarán los precios editados por los valores referenciales iniciales.",
+        "Restaurar",
+        () => {
+          priceDatabase = clone(DEFAULT_PRICE_DATABASE);
+          savePriceDatabase();
+          renderPriceDatabase();
+          showToast("Base de precios restaurada.");
+        }
+      );
+    }
+
+    function requestClearBudget() {
+      openModal(
+        "Limpiar presupuesto",
+        "Se limpiará el presupuesto actual y se generará un nuevo número.",
+        "Limpiar",
+        () => {
+          currentBudget = createEmptyBudget();
+          currentBudget.items = [];
+          addItem();
+          renderBudget();
+          showToast("Presupuesto limpio.");
+        }
+      );
+    }
+
+    function newBudget() {
+      currentBudget = createEmptyBudget();
+      currentBudget.items = [];
+      addItem();
+      renderBudget();
+      scrollToSection("#budgetSection");
+      showToast("Nuevo presupuesto creado.");
+    }
+
+    // Exportaciones y salida formal.
+    function exportCSV() {
+      const totals = calculateTotals();
+      const rows = [
+        ["Número", currentBudget.number],
+        ["Cliente", currentBudget.clientName],
+        ["Proyecto", currentBudget.projectName],
+        ["Ubicación", currentBudget.location],
+        ["Fecha", currentBudget.date],
+        [],
+        ["Ítem", "Categoría", "Descripción", "Unidad", "Cantidad", "Precio unitario", "Subtotal"],
+        ...currentBudget.items.map((item, index) => [
+          index + 1,
+          item.categoria,
+          item.descripcion,
+          item.unidad,
+          toNumber(item.cantidad),
+          toNumber(item.precioUnitario),
+          toNumber(item.cantidad) * toNumber(item.precioUnitario)
+        ]),
+        [],
+        ["Costo directo", totals.costoDirecto],
+        ["Gastos generales", totals.gastosGenerales],
+        ["Utilidad", totals.utilidad],
+        ["Descuento", totals.descuento],
+        ["Subtotal neto", totals.subtotalNeto],
+        ["IVA", totals.iva],
+        ["Total final", totals.totalFinal],
+        [],
+        ["Observaciones", currentBudget.observations]
+      ];
+
+      const csvContent = rows.map((row) => row.map(toCSVCell).join(";")).join("\n");
+      const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = `${safeFileName(currentBudget.number || "presupuesto")}.csv`;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      URL.revokeObjectURL(url);
+      showToast("CSV exportado.");
+    }
+
+    function printBudget() {
+      renderPrintDocument();
+      window.print();
+    }
+
+    async function copySummaryToClipboard() {
+      const totals = calculateTotals();
+      const summary = [
+        `Presupuesto: ${currentBudget.number}`,
+        `Proyecto: ${currentBudget.projectName || "Sin nombre"}`,
+        `Cliente: ${currentBudget.clientName || "Sin cliente"}`,
+        `Costo directo: ${formatCurrency(totals.costoDirecto)}`,
+        `Gastos generales: ${formatCurrency(totals.gastosGenerales)}`,
+        `Utilidad: ${formatCurrency(totals.utilidad)}`,
+        `Descuento: ${formatCurrency(totals.descuento)}`,
+        `Subtotal neto: ${formatCurrency(totals.subtotalNeto)}`,
+        `IVA (${currentBudget.ivaPercent}%): ${formatCurrency(totals.iva)}`,
+        `Total final: ${formatCurrency(totals.totalFinal)}`
+      ].join("\n");
+
+      try {
+        await navigator.clipboard.writeText(summary);
+      } catch (error) {
+        const textarea = document.createElement("textarea");
+        textarea.value = summary;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand("copy");
+        textarea.remove();
+      }
+      showToast("Resumen copiado al portapapeles.");
+    }
+
+    function renderPrintDocument() {
+      const totals = calculateTotals();
+      const rows = currentBudget.items.length
+        ? currentBudget.items.map((item, index) => `
+          <tr>
+            <td>${index + 1}</td>
+            <td>${escapeHTML(item.categoria)}</td>
+            <td>${escapeHTML(item.descripcion || "-")}</td>
+            <td>${escapeHTML(item.unidad || "-")}</td>
+            <td class="num">${formatNumber(toNumber(item.cantidad))}</td>
+            <td class="num">${formatCurrency(toNumber(item.precioUnitario))}</td>
+            <td class="num">${formatCurrency(toNumber(item.cantidad) * toNumber(item.precioUnitario))}</td>
+          </tr>
+        `).join("")
+        : `<tr><td colspan="7">Sin partidas registradas.</td></tr>`;
+
+      refs.printDocument.innerHTML = `
+        <div class="print-header">
+          <div>
+            <p>Presupuesto de obra</p>
+            <h1>${escapeHTML(currentBudget.projectName || "Proyecto sin nombre")}</h1>
+          </div>
+          <div>
+            <strong>Número:</strong> ${escapeHTML(currentBudget.number || "-")}<br>
+            <strong>Fecha:</strong> ${formatDate(currentBudget.date)}
+          </div>
+        </div>
+
+        <div class="print-meta">
+          <div><strong>Cliente:</strong> ${escapeHTML(currentBudget.clientName || "-")}</div>
+          <div><strong>Ubicación:</strong> ${escapeHTML(currentBudget.location || "-")}</div>
+          <div><strong>Proyecto:</strong> ${escapeHTML(currentBudget.projectName || "-")}</div>
+          <div><strong>Total de partidas:</strong> ${currentBudget.items.length}</div>
+        </div>
+
+        <div class="print-block">
+          <h2>Detalle de partidas</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Ítem</th>
+                <th>Categoría</th>
+                <th>Descripción</th>
+                <th>Unidad</th>
+                <th>Cantidad</th>
+                <th>Precio unitario</th>
+                <th>Subtotal</th>
+              </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>
+
+        <div class="print-block">
+          <h2>Resumen de costos</h2>
+          <div class="print-summary">
+            <div><strong>Costo directo:</strong> ${formatCurrency(totals.costoDirecto)}</div>
+            <div><strong>Gastos generales (${formatNumber(currentBudget.generalExpensesPercent)}%):</strong> ${formatCurrency(totals.gastosGenerales)}</div>
+            <div><strong>Utilidad (${formatNumber(currentBudget.profitPercent)}%):</strong> ${formatCurrency(totals.utilidad)}</div>
+            <div><strong>Descuento:</strong> ${formatCurrency(totals.descuento)}</div>
+            <div><strong>Subtotal neto:</strong> ${formatCurrency(totals.subtotalNeto)}</div>
+            <div><strong>IVA (${formatNumber(currentBudget.ivaPercent)}%):</strong> ${formatCurrency(totals.iva)}</div>
+          </div>
+          <div class="print-total">Total final: ${formatCurrency(totals.totalFinal)}</div>
+        </div>
+
+        <div class="print-block">
+          <h2>Observaciones</h2>
+          <p>${escapeHTML(currentBudget.observations || "Sin observaciones.")}</p>
+        </div>
+
+        <div class="signature-line">Firma y aprobación</div>
+      `;
+    }
+
+    function budgetToSupabasePayload(budget, userId) {
+      const totals = calculateTotalsForBudget(budget);
+      return {
+        user_id: userId,
+        client_name: budget.clientName || null,
+        project_name: budget.projectName || null,
+        location: budget.location || null,
+        budget_number: budget.number || null,
+        budget_date: budget.date || null,
+        notes: budget.observations || null,
+        direct_cost: totals.costoDirecto,
+        overhead_percent: toNumber(budget.generalExpensesPercent),
+        overhead_amount: totals.gastosGenerales,
+        profit_percent: toNumber(budget.profitPercent),
+        profit_amount: totals.utilidad,
+        discount_amount: totals.descuento,
+        tax_percent: toNumber(budget.ivaPercent),
+        tax_amount: totals.iva,
+        total_net: totals.subtotalNeto,
+        total_final: totals.totalFinal,
+        updated_at: new Date().toISOString()
+      };
+    }
+
+    function budgetItemToSupabaseRow(item, budgetId, userId, index) {
+      const quantity = toNumber(item.cantidad);
+      const unitPrice = toNumber(item.precioUnitario);
+      return {
+        budget_id: budgetId,
+        user_id: userId,
+        category: item.categoria || null,
+        description: item.descripcion || null,
+        unit: item.unidad || null,
+        quantity,
+        unit_price: unitPrice,
+        subtotal: quantity * unitPrice,
+        item_order: index + 1,
+        updated_at: new Date().toISOString()
+      };
+    }
+
+    function supabaseBudgetToLocal(row, itemRows = []) {
+      return {
+        id: row.id,
+        onlineId: row.id,
+        clientName: row.client_name || "",
+        projectName: row.project_name || "",
+        location: row.location || "",
+        date: row.budget_date || todayISO(),
+        number: row.budget_number || nextBudgetNumber(),
+        observations: row.notes || "",
+        items: itemRows.map((item) => ({
+          id: item.id || uniqueId(),
+          categoria: item.category || "Otros",
+          descripcion: item.description || "",
+          unidad: item.unit || "",
+          cantidad: toNumber(item.quantity),
+          precioUnitario: toNumber(item.unit_price)
+        })),
+        generalExpensesPercent: toNumber(row.overhead_percent),
+        profitPercent: toNumber(row.profit_percent),
+        discount: toNumber(row.discount_amount),
+        ivaPercent: toNumber(row.tax_percent),
+        createdAt: row.created_at || new Date().toISOString(),
+        updatedAt: row.updated_at || new Date().toISOString()
+      };
+    }
+
+    // Utilidades de almacenamiento y formato.
+    function getSavedBudgets() {
+      try {
+        return JSON.parse(localStorage.getItem(STORAGE_KEYS.budgets) || "[]");
+      } catch (error) {
+        return [];
+      }
+    }
+
+    function loadPriceDatabase() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEYS.priceDatabase) || "null");
+        return Array.isArray(saved) && saved.length ? saved : clone(DEFAULT_PRICE_DATABASE);
+      } catch (error) {
+        return clone(DEFAULT_PRICE_DATABASE);
+      }
+    }
+
+    function savePriceDatabase() {
+      localStorage.setItem(STORAGE_KEYS.priceDatabase, JSON.stringify(priceDatabase));
+    }
+
+    function calculateTotalsForBudget(budget) {
+      const previous = currentBudget;
+      currentBudget = budget;
+      const totals = calculateTotals();
+      currentBudget = previous;
+      return totals;
+    }
+
+    function openModal(title, text, actionLabel, action) {
+      refs.modalTitle.textContent = title;
+      refs.modalText.textContent = text;
+      refs.modalConfirm.textContent = actionLabel;
+      modalAction = action;
+      refs.modalBackdrop.classList.add("is-visible");
+      refs.modalConfirm.focus();
+    }
+
+    function closeModal() {
+      refs.modalBackdrop.classList.remove("is-visible");
+      modalAction = null;
+    }
+
+    function showToast(message) {
+      clearTimeout(toastTimer);
+      refs.toast.textContent = message;
+      refs.toast.classList.add("is-visible");
+      toastTimer = setTimeout(() => refs.toast.classList.remove("is-visible"), 3200);
+    }
+
+    function scrollToSection(selector) {
+      const target = document.querySelector(selector);
+      if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    function toNumber(value) {
+      const number = Number(value);
+      return Number.isFinite(number) && number > 0 ? number : 0;
+    }
+
+    function cleanNonNegative(value) {
+      const number = Number(value);
+      if (!Number.isFinite(number) || number < 0) return "0";
+      return value;
+    }
+
+    function formatCurrency(value) {
+      return new Intl.NumberFormat("es-CL", {
+        style: "currency",
+        currency: "CLP",
+        maximumFractionDigits: 0
+      }).format(Math.round(toNumber(value)));
+    }
+
+    function formatNumber(value) {
+      return new Intl.NumberFormat("es-CL", { maximumFractionDigits: 2 }).format(toNumber(value));
+    }
+
+    function formatDate(value) {
+      if (!value) return "-";
+      const date = new Date(`${value}T00:00:00`);
+      if (Number.isNaN(date.getTime())) return value;
+      return new Intl.DateTimeFormat("es-CL").format(date);
+    }
+
+    function normalizeText(value) {
+      return String(value || "")
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
+    }
+
+    function escapeHTML(value) {
+      return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function escapeAttribute(value) {
+      return escapeHTML(value);
+    }
+
+    function toCSVCell(value) {
+      const text = String(value ?? "");
+      return `"${text.replace(/"/g, '""')}"`;
+    }
+
+    function safeFileName(value) {
+      return String(value || "presupuesto")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-zA-Z0-9-_]+/g, "-")
+        .replace(/^-+|-+$/g, "")
+        .toLowerCase();
+    }
+
+    function uniqueId() {
+      if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+      return `id-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    }
+
+    function clone(value) {
+      return JSON.parse(JSON.stringify(value));
+    }
+  </script>
+</body>
 </html>
