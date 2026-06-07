@@ -683,7 +683,333 @@
       display: none;
     }
 
+    /* Layout profesional tipo dashboard */
+    .topbar {
+      box-shadow: 0 8px 24px rgba(23, 32, 27, 0.06);
+    }
+
+    .topbar-inner {
+      width: min(100% - 32px, 1480px);
+      min-height: 64px;
+    }
+
+    .brand-mark {
+      border-radius: 999px;
+      background: #17783d;
+    }
+
+    .budget-switcher {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 260px;
+      max-width: 360px;
+      padding: 10px 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--ink);
+    }
+
+    .budget-switcher strong {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .topbar-status,
+    .user-menu {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--muted);
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .user-avatar {
+      display: inline-grid;
+      width: 34px;
+      height: 34px;
+      place-items: center;
+      border-radius: 999px;
+      background: #0e6f2e;
+      color: #fff;
+      font-size: 0.82rem;
+      font-weight: 900;
+    }
+
+    .btn.compact {
+      min-height: 34px;
+      padding: 7px 10px;
+      font-size: 0.9rem;
+    }
+
+    .page {
+      width: min(100% - 32px, 1480px);
+      display: grid;
+      grid-template-columns: 190px minmax(0, 1fr);
+      gap: 18px;
+      align-items: start;
+      padding: 22px 0 56px;
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 86px;
+      display: grid;
+      gap: 8px;
+      min-height: calc(100vh - 108px);
+      padding: 14px 10px;
+      border-right: 1px solid var(--line);
+    }
+
+    .sidebar-new {
+      width: 100%;
+      margin-bottom: 10px;
+    }
+
+    .sidebar-link {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-height: 44px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      background: transparent;
+      color: #34443b;
+      font-weight: 800;
+      text-align: left;
+    }
+
+    .sidebar-link span {
+      display: inline-grid;
+      width: 22px;
+      place-items: center;
+      color: var(--brand);
+      font-size: 1.05rem;
+    }
+
+    .sidebar-link:hover,
+    .sidebar-link.is-active {
+      background: #eaf4ed;
+      color: var(--brand-2);
+    }
+
+    .main-column {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(320px, 380px);
+      gap: 16px;
+      align-items: start;
+    }
+
+    .main-column > .section,
+    .main-column > .hero {
+      grid-column: 1;
+    }
+
+    #home {
+      grid-column: 1 / -1;
+    }
+
+    #financialSection {
+      grid-column: 2;
+      grid-row: 2 / span 5;
+      position: sticky;
+      top: 86px;
+      margin-top: 0;
+    }
+
+    #onlineBudgetsSection,
+    #savedSection,
+    #databaseSection,
+    #apusSection,
+    #scheduleSection,
+    #clientsSection,
+    #settingsSection {
+      grid-column: 1;
+    }
+
+    .dashboard-cards {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+      margin: 0;
+    }
+
+    .metric-card {
+      display: flex;
+      gap: 14px;
+      min-width: 0;
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      box-shadow: var(--shadow);
+    }
+
+    .metric-icon {
+      display: inline-grid;
+      flex: 0 0 54px;
+      width: 54px;
+      height: 54px;
+      place-items: center;
+      border-radius: 8px;
+      background: #e7f3ea;
+      color: var(--brand);
+      font-size: 1.45rem;
+      font-weight: 900;
+    }
+
+    .metric-card p {
+      margin: 2px 0 6px;
+      color: var(--ink);
+      font-weight: 800;
+    }
+
+    .metric-card strong {
+      display: block;
+      overflow: hidden;
+      color: var(--brand-2);
+      font-size: 1.25rem;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .metric-card small {
+      color: var(--muted);
+    }
+
+    .section {
+      margin-top: 0;
+      box-shadow: 0 8px 24px rgba(23, 32, 27, 0.06);
+    }
+
+    .section-header {
+      align-items: center;
+    }
+
+    #budgetSection .section-header,
+    #financialSection .section-header {
+      margin-bottom: 14px;
+    }
+
+    #itemsSection .toolbar .btn {
+      min-width: 160px;
+    }
+
+    #financialSection .financial-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+    }
+
+    #financialSection .mini-grid {
+      grid-template-columns: 1fr;
+      margin-top: 0;
+    }
+
+    #financialSection .summary-list {
+      padding: 0;
+      border: 0;
+      background: transparent;
+    }
+
+    #financialSection .summary-row {
+      padding: 6px 0;
+    }
+
+    #financialSection .summary-row.total {
+      margin: 8px -20px -4px;
+      padding: 16px 20px;
+      background: #edf7ef;
+      border-top: 1px solid #d6eadb;
+      color: var(--brand-2);
+    }
+
+    .summary-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .summary-actions .btn-primary {
+      grid-column: 1 / -1;
+      min-height: 48px;
+    }
+
+    .placeholder-section {
+      min-height: 130px;
+      display: grid;
+      align-content: center;
+    }
+
+    .placeholder-section p {
+      margin: 8px 0 0;
+      color: var(--muted);
+    }
+
     @media (max-width: 980px) {
+      .topbar-inner {
+        flex-wrap: wrap;
+      }
+
+      .budget-switcher {
+        order: 3;
+        flex: 1 1 100%;
+        max-width: none;
+      }
+
+      .page {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        position: static;
+        grid-column: 1;
+        display: flex;
+        min-height: 0;
+        overflow-x: auto;
+        padding: 0 0 8px;
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .sidebar-new,
+      .sidebar-link {
+        flex: 0 0 auto;
+        width: auto;
+        white-space: nowrap;
+      }
+
+      .main-column {
+        grid-column: 1;
+        grid-template-columns: 1fr;
+      }
+
+      .main-column > .section,
+      .main-column > .hero,
+      #financialSection,
+      #onlineBudgetsSection,
+      #savedSection,
+      #databaseSection,
+      #apusSection,
+      #scheduleSection,
+      #clientsSection,
+      #settingsSection {
+        grid-column: 1;
+      }
+
+      #financialSection {
+        grid-row: auto;
+        position: static;
+      }
+
+      .dashboard-cards {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
       .hero,
       .financial-grid,
       .auth-panel {
@@ -727,6 +1053,25 @@
         padding: 12px 0;
       }
 
+      .brand,
+      .topbar-status,
+      .user-menu {
+        width: 100%;
+        justify-content: space-between;
+      }
+
+      .dashboard-cards {
+        grid-template-columns: 1fr;
+      }
+
+      .metric-card {
+        padding: 14px;
+      }
+
+      .summary-actions {
+        grid-template-columns: 1fr;
+      }
+
       .topbar-actions,
       .screen-actions,
       .toolbar,
@@ -756,6 +1101,11 @@
 
       .btn {
         width: 100%;
+      }
+
+      .sidebar .btn,
+      .sidebar-link {
+        width: auto;
       }
 
       .summary-row.total {
@@ -885,69 +1235,71 @@
       <div class="topbar-inner">
         <div class="brand" aria-label="Generador de Presupuestos de Obra">
           <span class="brand-mark">P</span>
-          <span>Presupuestos de Obra</span>
+          <span>Generador de Presupuestos de Obra</span>
         </div>
-        <nav class="topbar-actions" aria-label="Acciones principales">
-          <button class="btn btn-primary" type="button" id="topNewBudget">Nuevo presupuesto</button>
-          <button class="btn btn-ghost" type="button" data-scroll="#onlineSection">Online</button>
-          <button class="btn btn-ghost" type="button" data-scroll="#savedSection">Borradores</button>
-          <button class="btn btn-ghost" type="button" data-scroll="#databaseSection">Base de precios</button>
-          <button class="btn btn-ghost" type="button" data-scroll="#apusSection">APUs</button>
-          <button class="btn btn-danger" type="button" id="logoutBtn">Cerrar sesión</button>
-        </nav>
+        <div class="budget-switcher" aria-label="Presupuesto actual">
+          <span aria-hidden="true">▣</span>
+          <strong id="currentBudgetTitle">Presupuesto sin nombre</strong>
+        </div>
+        <div class="topbar-status">
+          <span class="status-dot" id="syncDot"></span>
+          <span id="syncStatusText">Pendiente de configurar Supabase.</span>
+        </div>
+        <div class="user-menu">
+          <span class="user-avatar" id="userAvatar">--</span>
+          <span id="sessionLabel">Sin sesión</span>
+          <button class="btn btn-ghost compact" type="button" id="logoutBtn">Cerrar sesión</button>
+        </div>
       </div>
     </header>
 
     <main class="page">
-      <section class="sync-strip" id="onlineSection">
-        <div>
-          <div class="sync-status">
-            <span class="status-dot" id="syncDot"></span>
-            <strong id="sessionLabel">Sin sesión</strong>
-            <span id="syncStatusText">Pendiente de configurar Supabase.</span>
-          </div>
-        </div>
-        <div class="toolbar">
-          <button class="btn btn-primary" type="button" id="saveOnlineBtn">Guardar presupuesto</button>
-          <button class="btn btn-ghost" type="button" id="loadOnlineBtn">Cargar presupuestos online</button>
-          <button class="btn btn-blue" type="button" id="syncBtn">Sincronizar</button>
-          <button class="btn btn-warning" type="button" id="migrateLocalBtn">Migrar datos locales a Supabase</button>
-        </div>
-      </section>
+      <aside class="sidebar" aria-label="Navegación principal">
+        <button class="btn btn-primary sidebar-new" type="button" id="topNewBudget">Nuevo presupuesto</button>
+        <button class="sidebar-link is-active" type="button" data-scroll="#home"><span>⌂</span>Dashboard</button>
+        <button class="sidebar-link" type="button" data-scroll="#onlineBudgetsSection"><span>▤</span>Presupuestos</button>
+        <button class="sidebar-link" type="button" data-scroll="#itemsSection"><span>☷</span>Partidas</button>
+        <button class="sidebar-link" type="button" data-scroll="#apusSection"><span>▦</span>APUs</button>
+        <button class="sidebar-link" type="button" data-scroll="#scheduleSection"><span>□</span>Cronograma</button>
+        <button class="sidebar-link" type="button" data-scroll="#clientsSection"><span>◌</span>Clientes</button>
+        <button class="sidebar-link" type="button" data-scroll="#settingsSection"><span>⚙</span>Ajustes</button>
+      </aside>
 
-      <section class="hero" id="home">
-        <div class="hero-panel">
-          <p class="eyebrow">Dashboard de costos de construcción</p>
-          <h1>Generador de Presupuestos de Obra</h1>
-          <p class="hero-copy">
-            Crea presupuestos de construcción con partidas editables, precios referenciales,
-            cálculos automáticos, guardado online y una vista formal lista para imprimir o exportar a PDF.
-          </p>
-          <div class="hero-actions">
-            <button class="btn btn-primary" type="button" id="heroNewBudget">Nuevo presupuesto</button>
-            <button class="btn btn-blue" type="button" data-scroll="#onlineBudgetsSection">Ver presupuestos online</button>
-            <button class="btn btn-ghost" type="button" data-scroll="#databaseSection">Base de precios</button>
-          </div>
-        </div>
+      <div class="main-column">
 
-        <aside class="stats-card" aria-label="Resumen del presupuesto actual">
-          <div class="stat-line">
-            <span>Presupuesto</span>
+      <section class="hero dashboard-cards" id="home" aria-label="Dashboard">
+        <article class="metric-card">
+          <span class="metric-icon">▤</span>
+          <div>
+            <p>Presupuesto actual</p>
             <strong id="statBudgetNumber">-</strong>
+            <small id="statItemsCount">0 partidas</small>
           </div>
-          <div class="stat-line">
-            <span>Partidas</span>
-            <strong id="statItemsCount">0</strong>
-          </div>
-          <div class="stat-line">
-            <span>Costo directo</span>
+        </article>
+        <article class="metric-card">
+          <span class="metric-icon">▧</span>
+          <div>
+            <p>Costo directo</p>
             <strong id="statDirectCost">$0</strong>
+            <small>Base de cálculo</small>
           </div>
-          <div class="stat-line">
-            <span>Total final</span>
+        </article>
+        <article class="metric-card">
+          <span class="metric-icon">▥</span>
+          <div>
+            <p>IVA</p>
+            <strong id="statIvaValue">$0</strong>
+            <small id="statIvaPercent">19%</small>
+          </div>
+        </article>
+        <article class="metric-card">
+          <span class="metric-icon">▣</span>
+          <div>
+            <p>Total final</p>
             <strong id="statFinalTotal">$0</strong>
+            <small>Presupuesto vigente</small>
           </div>
-        </aside>
+        </article>
       </section>
 
       <section class="section" id="budgetSection">
@@ -955,11 +1307,6 @@
           <div>
             <h2>Datos generales del presupuesto</h2>
             <p>Completa la información del cliente y del proyecto. La fecha y el número se generan automáticamente, pero puedes editarlos.</p>
-          </div>
-          <div class="screen-actions">
-            <button class="btn btn-primary" type="button" id="saveBudgetBtn">Guardar presupuesto</button>
-            <button class="btn btn-ghost" type="button" id="saveLocalDraftBtn">Guardar borrador local</button>
-            <button class="btn btn-warning" type="button" id="clearBudgetBtn">Limpiar presupuesto</button>
           </div>
         </div>
 
@@ -1001,7 +1348,6 @@
           </div>
           <div class="toolbar">
             <button class="btn btn-primary" type="button" id="addItemBtn">Agregar partida</button>
-            <button class="btn btn-ghost" type="button" data-scroll="#databaseSection">Agregar partida desde base de precios</button>
           </div>
         </div>
 
@@ -1030,7 +1376,7 @@
                 <th style="width: 120px;">Cantidad</th>
                 <th style="width: 150px;">Precio unitario</th>
                 <th style="width: 150px;">Subtotal</th>
-                <th style="width: 80px;">Eliminar</th>
+                <th style="width: 90px;">Acción</th>
               </tr>
             </thead>
             <tbody id="itemsBody"></tbody>
@@ -1064,14 +1410,8 @@
       <section class="section" id="financialSection">
         <div class="section-header">
           <div>
-            <h2>Resumen financiero</h2>
-            <p>Define gastos generales, utilidad, descuento e IVA. El IVA viene con 19% por defecto.</p>
-          </div>
-          <div class="toolbar">
-            <button class="btn btn-ghost" type="button" id="copySummaryBtn">Copiar resumen</button>
-            <button class="btn btn-ghost" type="button" id="exportCsvBtn">Exportar CSV</button>
-            <button class="btn btn-blue" type="button" id="printBtn">Imprimir presupuesto</button>
-            <button class="btn btn-primary" type="button" id="pdfBtn">Exportar a PDF</button>
+            <h2>Resumen</h2>
+            <p>Totales y acciones principales del presupuesto.</p>
           </div>
         </div>
 
@@ -1104,6 +1444,12 @@
             <div class="summary-row"><span>IVA</span><strong id="ivaValue">$0</strong></div>
             <div class="summary-row total"><span>Total final</span><strong id="finalTotalValue">$0</strong></div>
           </div>
+          <div class="summary-actions">
+            <button class="btn btn-primary" type="button" id="saveBudgetBtn">Guardar</button>
+            <button class="btn btn-ghost" type="button" id="saveLocalDraftBtn">Guardar borrador</button>
+            <button class="btn btn-ghost" type="button" id="duplicateCurrentBtn">Duplicar</button>
+            <button class="btn btn-ghost" type="button" id="pdfBtn">Exportar PDF</button>
+          </div>
         </div>
       </section>
 
@@ -1124,7 +1470,10 @@
             <h2>Borradores locales</h2>
             <p>Respaldo opcional en este navegador. Estos borradores no se sincronizan entre dispositivos.</p>
           </div>
-          <button class="btn btn-ghost" type="button" id="refreshSavedBtn">Actualizar borradores</button>
+          <div class="toolbar">
+            <button class="btn btn-ghost" type="button" id="refreshSavedBtn">Actualizar borradores</button>
+            <button class="btn btn-warning" type="button" id="migrateLocalBtn">Migrar a Supabase</button>
+          </div>
         </div>
         <div class="saved-list" id="savedList"></div>
       </section>
@@ -1265,6 +1614,21 @@
           </table>
         </div>
       </section>
+      <section class="section placeholder-section" id="scheduleSection">
+        <h2>Cronograma</h2>
+        <p>Próximamente: programación de obra vinculada al presupuesto.</p>
+      </section>
+
+      <section class="section placeholder-section" id="clientsSection">
+        <h2>Clientes</h2>
+        <p>Próximamente: base de clientes y datos de contacto.</p>
+      </section>
+
+      <section class="section placeholder-section" id="settingsSection">
+        <h2>Ajustes</h2>
+        <p>Próximamente: datos de empresa, formatos de exportación y preferencias.</p>
+      </section>
+      </div>
     </main>
   </div>
 
@@ -1387,8 +1751,8 @@
     function bindRefs() {
       [
         "authScreen", "appShell", "authForm", "authTitle", "authEmail", "authPassword", "authMessage",
-        "syncDot", "sessionLabel", "syncStatusText", "onlineBudgetsList",
-        "statBudgetNumber", "statItemsCount", "statDirectCost", "statFinalTotal",
+        "syncDot", "sessionLabel", "syncStatusText", "userAvatar", "currentBudgetTitle", "onlineBudgetsList",
+        "statBudgetNumber", "statItemsCount", "statDirectCost", "statIvaValue", "statIvaPercent", "statFinalTotal",
         "clientName", "projectName", "location", "budgetDate", "budgetNumber", "observations",
         "projectWarning", "itemsBody", "chapterSummaryBody", "itemSearch", "itemCategoryFilter", "visibleItemsLabel",
         "generalExpensesPercent", "profitPercent", "discount", "ivaPercent",
@@ -1407,30 +1771,35 @@
 
     function bindEvents() {
       document.querySelectorAll("[data-scroll]").forEach((button) => {
-        button.addEventListener("click", () => scrollToSection(button.dataset.scroll));
+        button.addEventListener("click", () => {
+          document.querySelectorAll(".sidebar-link").forEach((link) => link.classList.remove("is-active"));
+          if (button.classList.contains("sidebar-link")) button.classList.add("is-active");
+          scrollToSection(button.dataset.scroll);
+        });
       });
 
       refs.authForm.addEventListener("submit", signIn);
       document.getElementById("signupBtn").addEventListener("click", signUp);
       document.getElementById("localModeBtn").addEventListener("click", enterLocalMode);
       document.getElementById("logoutBtn").addEventListener("click", signOut);
-      document.getElementById("topNewBudget").addEventListener("click", newBudget);
-      document.getElementById("heroNewBudget").addEventListener("click", newBudget);
-      document.getElementById("saveBudgetBtn").addEventListener("click", saveBudget);
-      document.getElementById("saveLocalDraftBtn").addEventListener("click", saveLocalDraft);
-      document.getElementById("saveOnlineBtn").addEventListener("click", saveBudgetOnline);
-      document.getElementById("loadOnlineBtn").addEventListener("click", loadOnlineBudgets);
-      document.getElementById("syncBtn").addEventListener("click", syncOnline);
-      document.getElementById("migrateLocalBtn").addEventListener("click", requestMigrateLocalBudgets);
-      document.getElementById("refreshOnlineBtn").addEventListener("click", loadOnlineBudgets);
-      document.getElementById("clearBudgetBtn").addEventListener("click", requestClearBudget);
-      document.getElementById("addItemBtn").addEventListener("click", () => addItem());
-      document.getElementById("copySummaryBtn").addEventListener("click", copySummaryToClipboard);
-      document.getElementById("exportCsvBtn").addEventListener("click", exportCSV);
-      document.getElementById("printBtn").addEventListener("click", printBudget);
-      document.getElementById("pdfBtn").addEventListener("click", printBudget);
-      document.getElementById("refreshSavedBtn").addEventListener("click", renderSavedBudgets);
-      document.getElementById("resetDatabaseBtn").addEventListener("click", requestResetDatabase);
+      bindOptionalClick("topNewBudget", newBudget);
+      bindOptionalClick("heroNewBudget", newBudget);
+      bindOptionalClick("saveBudgetBtn", saveBudget);
+      bindOptionalClick("saveLocalDraftBtn", saveLocalDraft);
+      bindOptionalClick("saveOnlineBtn", saveBudgetOnline);
+      bindOptionalClick("loadOnlineBtn", loadOnlineBudgets);
+      bindOptionalClick("syncBtn", syncOnline);
+      bindOptionalClick("migrateLocalBtn", requestMigrateLocalBudgets);
+      bindOptionalClick("refreshOnlineBtn", loadOnlineBudgets);
+      bindOptionalClick("clearBudgetBtn", requestClearBudget);
+      bindOptionalClick("addItemBtn", () => addItem());
+      bindOptionalClick("copySummaryBtn", copySummaryToClipboard);
+      bindOptionalClick("exportCsvBtn", exportCSV);
+      bindOptionalClick("printBtn", printBudget);
+      bindOptionalClick("pdfBtn", printBudget);
+      bindOptionalClick("duplicateCurrentBtn", duplicateCurrentBudget);
+      bindOptionalClick("refreshSavedBtn", renderSavedBudgets);
+      bindOptionalClick("resetDatabaseBtn", requestResetDatabase);
 
       ["clientName", "projectName", "location", "budgetDate", "budgetNumber", "observations"].forEach((id) => {
         refs[id].addEventListener("input", (event) => {
@@ -1446,6 +1815,7 @@
           validateBudget();
           renderPrintDocument();
           renderDashboardStats();
+          markUnsavedChanges();
         });
       });
 
@@ -1454,6 +1824,7 @@
           event.target.value = cleanNonNegative(event.target.value);
           currentBudget[id] = toNumber(event.target.value);
           renderTotals();
+          markUnsavedChanges();
         });
       });
 
@@ -1485,6 +1856,11 @@
         if (typeof modalAction === "function") modalAction();
         closeModal();
       });
+    }
+
+    function bindOptionalClick(id, handler) {
+      const element = document.getElementById(id);
+      if (element) element.addEventListener("click", handler);
     }
 
     async function initializeSupabase() {
@@ -1546,16 +1922,20 @@
       if (hasSession) {
         const email = currentSession.user.email || "usuario";
         refs.sessionLabel.textContent = email;
+        refs.userAvatar.textContent = initialsFromEmail(email);
         setAuthMessage("");
         setSyncStatus("Conectado a Supabase.", "online");
       } else if (localMode) {
         refs.sessionLabel.textContent = "Modo local";
+        refs.userAvatar.textContent = "ML";
         setSyncStatus("Trabajando solo con localStorage. Usa Supabase para sincronizar dispositivos.", "idle");
       } else if (!isSupabaseConfigured()) {
         refs.sessionLabel.textContent = "Sin conexión online";
+        refs.userAvatar.textContent = "--";
         setAuthMessage("Configura Supabase o entra en modo local.");
       } else {
         refs.sessionLabel.textContent = "Sin sesión";
+        refs.userAvatar.textContent = "--";
         setAuthMessage("Inicia sesión o crea una cuenta para guardar online.");
       }
     }
@@ -1569,6 +1949,13 @@
       refs.syncStatusText.textContent = message;
       refs.syncDot.classList.toggle("is-online", state === "online" || state === "saved");
       refs.syncDot.classList.toggle("is-error", state === "error");
+    }
+
+    function markUnsavedChanges() {
+      if (!refs.syncStatusText) return;
+      if (currentSession) {
+        setSyncStatus("Cambios sin guardar", "idle");
+      }
     }
 
     async function signIn(event) {
@@ -1698,7 +2085,7 @@
         currentBudget.onlineId = saved.id;
         currentBudget.updatedAt = saved.updated_at || new Date().toISOString();
         await loadOnlineBudgets();
-        setSyncStatus("Presupuesto guardado online correctamente.", "saved");
+        setSyncStatus("Guardado online", "saved");
         showToast("Presupuesto guardado online correctamente.");
       } catch (error) {
         setSyncStatus(error.message, "error");
@@ -1840,7 +2227,7 @@
       currentBudget = supabaseBudgetToLocal(budgetResponse.data, itemsResponse.data || []);
       renderBudget();
       scrollToSection("#budgetSection");
-      setSyncStatus("Presupuesto online abierto.", "online");
+      setSyncStatus("Guardado online", "online");
       showToast("Presupuesto cargado desde Supabase.");
     }
 
@@ -1990,7 +2377,7 @@
           <td class="num">${formatNumber(apu.waste_percent)}%</td>
           <td class="num">${formatNumber(apu.performance || 1)}</td>
           <td class="num"><strong>${formatCurrency(apu.unit_price)}</strong></td>
-          <td><button class="btn btn-primary" type="button" data-add-apu-id="${apu.id}">Agregar</button></td>
+          <td><button class="btn btn-primary" type="button" data-add-apu-id="${apu.id}">Agregar al presupuesto</button></td>
         </tr>
       `).join("");
     }
@@ -2109,6 +2496,16 @@
       return index >= 0 ? index : CHAPTERS.length;
     }
 
+    function initialsFromEmail(email = "") {
+      const name = email.split("@")[0] || "";
+      return name
+        .split(/[._-]+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0].toUpperCase())
+        .join("") || "US";
+    }
+
     // Renderiza el formulario, las partidas, los totales y la vista imprimible.
     function renderBudget() {
       refs.clientName.value = currentBudget.clientName;
@@ -2194,11 +2591,13 @@
       currentBudget.items.push(normalizedItem);
       renderBudgetItems();
       renderTotals();
+      markUnsavedChanges();
     }
 
     function removeItem(index) {
       currentBudget.items.splice(index, 1);
       renderBudgetItems();
+      markUnsavedChanges();
       showToast("Partida eliminada.");
     }
 
@@ -2217,6 +2616,7 @@
       }
 
       renderTotals();
+      markUnsavedChanges();
     }
 
     function handleItemClick(event) {
@@ -2304,9 +2704,13 @@
 
     function renderDashboardStats() {
       const totals = calculateTotals();
-      refs.statBudgetNumber.textContent = currentBudget.number || "-";
-      refs.statItemsCount.textContent = String(currentBudget.items.length);
+      const projectLabel = currentBudget.projectName || currentBudget.number || "Presupuesto sin nombre";
+      refs.currentBudgetTitle.textContent = projectLabel;
+      refs.statBudgetNumber.textContent = projectLabel;
+      refs.statItemsCount.textContent = `${currentBudget.items.length} partidas`;
       refs.statDirectCost.textContent = formatCurrency(totals.costoDirecto);
+      refs.statIvaValue.textContent = formatCurrency(totals.iva);
+      refs.statIvaPercent.textContent = `${formatNumber(currentBudget.ivaPercent)}%`;
       refs.statFinalTotal.textContent = formatCurrency(totals.totalFinal);
     }
 
@@ -2404,6 +2808,22 @@
       renderBudget();
       scrollToSection("#budgetSection");
       showToast("Copia creada. Revísala y guárdala cuando esté lista.");
+    }
+
+    function duplicateCurrentBudget() {
+      currentBudget = {
+        ...clone(currentBudget),
+        id: null,
+        onlineId: null,
+        number: nextBudgetNumber(),
+        date: todayISO(),
+        projectName: `${currentBudget.projectName || "Presupuesto"} (copia)`,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      renderBudget();
+      scrollToSection("#budgetSection");
+      showToast("Presupuesto duplicado. Guarda para subir la copia.");
     }
 
     function renderSavedBudgets() {
