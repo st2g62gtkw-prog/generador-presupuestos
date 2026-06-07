@@ -41,6 +41,8 @@ create table if not exists public.budget_items (
   id uuid primary key default gen_random_uuid(),
   budget_id uuid not null references public.budgets(id) on delete cascade,
   user_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
+  code text,
+  chapter text,
   category text,
   description text,
   unit text,
@@ -65,6 +67,7 @@ create table if not exists public.apus (
   equipment_cost numeric default 0,
   subcontract_cost numeric default 0,
   waste_percent numeric default 0,
+  performance numeric default 1,
   unit_price numeric default 0,
   notes text,
   created_at timestamptz not null default now(),
@@ -90,7 +93,10 @@ create index if not exists budgets_user_id_idx on public.budgets(user_id);
 create index if not exists budgets_updated_at_idx on public.budgets(updated_at desc);
 create index if not exists budget_items_budget_id_idx on public.budget_items(budget_id);
 create index if not exists budget_items_user_id_idx on public.budget_items(user_id);
+create index if not exists budget_items_chapter_idx on public.budget_items(user_id, chapter);
+create index if not exists budget_items_code_idx on public.budget_items(user_id, code);
 create index if not exists apus_user_id_idx on public.apus(user_id);
+create index if not exists apus_code_idx on public.apus(user_id, code);
 create index if not exists schedule_tasks_user_id_idx on public.schedule_tasks(user_id);
 create index if not exists schedule_tasks_budget_id_idx on public.schedule_tasks(budget_id);
 

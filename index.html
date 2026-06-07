@@ -384,7 +384,7 @@
     table {
       width: 100%;
       border-collapse: collapse;
-      min-width: 880px;
+      min-width: 1180px;
     }
 
     th {
@@ -1022,6 +1022,8 @@
             <thead>
               <tr>
                 <th style="width: 70px;">Ítem</th>
+                <th style="width: 120px;">Código</th>
+                <th style="width: 180px;">Capítulo</th>
                 <th style="width: 180px;">Categoría</th>
                 <th>Descripción</th>
                 <th style="width: 110px;">Unidad</th>
@@ -1032,6 +1034,29 @@
               </tr>
             </thead>
             <tbody id="itemsBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="section" id="chapterSummarySection">
+        <div class="section-header">
+          <div>
+            <h2>Resumen por capítulos</h2>
+            <p>Distribución del costo directo según la estructura profesional del presupuesto.</p>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table aria-label="Resumen por capítulos">
+            <thead>
+              <tr>
+                <th>Capítulo</th>
+                <th style="width: 180px;">Cantidad de partidas</th>
+                <th style="width: 180px;">Costo directo</th>
+                <th style="width: 180px;">% sobre total</th>
+              </tr>
+            </thead>
+            <tbody id="chapterSummaryBody"></tbody>
           </table>
         </div>
       </section>
@@ -1151,7 +1176,7 @@
 
         <form class="apu-form" id="apuForm">
           <div class="field">
-            <label for="apuCode">Código</label>
+            <label for="apuCode">Código APU</label>
             <input id="apuCode" type="text" autocomplete="off" />
           </div>
           <div class="field">
@@ -1183,15 +1208,19 @@
             <input id="apuEquipmentCost" type="number" min="0" step="1" />
           </div>
           <div class="field">
-            <label for="apuSubcontractCost">Subcontrato</label>
+            <label for="apuSubcontractCost">Subcontratos</label>
             <input id="apuSubcontractCost" type="number" min="0" step="1" />
           </div>
           <div class="field">
-            <label for="apuWastePercent">Pérdida %</label>
+            <label for="apuWastePercent">Pérdidas %</label>
             <input id="apuWastePercent" type="number" min="0" step="0.01" />
           </div>
           <div class="field">
-            <label for="apuUnitPrice">Precio unitario</label>
+            <label for="apuPerformance">Rendimiento</label>
+            <input id="apuPerformance" type="number" min="0.01" step="0.01" value="1" />
+          </div>
+          <div class="field">
+            <label for="apuUnitPrice">Precio unitario final</label>
             <input id="apuUnitPrice" type="number" min="0" step="1" />
           </div>
           <div class="field full">
@@ -1200,7 +1229,7 @@
           </div>
           <div class="toolbar full">
             <button class="btn btn-primary" type="submit" id="saveApuBtn">Crear APU</button>
-            <span class="badge" id="apuPriceHint">Precio calculado: $0</span>
+            <span class="badge" id="apuPriceHint">Precio unitario final: $0</span>
           </div>
         </form>
 
@@ -1219,11 +1248,16 @@
           <table aria-label="Base de APUs">
             <thead>
               <tr>
-                <th style="width: 100px;">Código</th>
-                <th style="width: 170px;">Categoría</th>
+                <th style="width: 110px;">Código APU</th>
                 <th>Nombre</th>
                 <th style="width: 100px;">Unidad</th>
-                <th style="width: 150px;">Precio unitario</th>
+                <th style="width: 130px;">Materiales</th>
+                <th style="width: 130px;">Mano de obra</th>
+                <th style="width: 130px;">Equipos</th>
+                <th style="width: 130px;">Subcontratos</th>
+                <th style="width: 110px;">Pérdidas %</th>
+                <th style="width: 120px;">Rendimiento</th>
+                <th style="width: 170px;">Precio unitario final</th>
                 <th style="width: 120px;">Agregar</th>
               </tr>
             </thead>
@@ -1259,6 +1293,17 @@
       "Enfierradura",
       "Moldaje",
       "Albañilería",
+      "Terminaciones",
+      "Instalaciones",
+      "Pintura",
+      "Aseo y entrega",
+      "Otros"
+    ];
+
+    const CHAPTERS = [
+      "Obras preliminares",
+      "Movimiento de tierra",
+      "Obra gruesa",
       "Terminaciones",
       "Instalaciones",
       "Pintura",
@@ -1345,14 +1390,14 @@
         "syncDot", "sessionLabel", "syncStatusText", "onlineBudgetsList",
         "statBudgetNumber", "statItemsCount", "statDirectCost", "statFinalTotal",
         "clientName", "projectName", "location", "budgetDate", "budgetNumber", "observations",
-        "projectWarning", "itemsBody", "itemSearch", "itemCategoryFilter", "visibleItemsLabel",
+        "projectWarning", "itemsBody", "chapterSummaryBody", "itemSearch", "itemCategoryFilter", "visibleItemsLabel",
         "generalExpensesPercent", "profitPercent", "discount", "ivaPercent",
         "directCostValue", "generalExpensesValue", "profitValue", "discountValue",
         "netSubtotalValue", "ivaValue", "finalTotalValue", "savedList",
         "databaseSearch", "databaseCategoryFilter", "databaseBody", "printDocument",
         "apuForm", "apuCode", "apuCategory", "apuName", "apuDescription", "apuUnit",
         "apuMaterialsCost", "apuLaborCost", "apuEquipmentCost", "apuSubcontractCost",
-        "apuWastePercent", "apuUnitPrice", "apuNotes", "apuPriceHint", "apuSearch",
+        "apuWastePercent", "apuPerformance", "apuUnitPrice", "apuNotes", "apuPriceHint", "apuSearch",
         "apuCategoryFilter", "apusBody",
         "toast", "modalBackdrop", "modalTitle", "modalText", "modalCancel", "modalConfirm"
       ].forEach((id) => {
@@ -1429,7 +1474,7 @@
       refs.apusBody.addEventListener("click", handleApuClick);
       refs.apuSearch.addEventListener("input", renderApus);
       refs.apuCategoryFilter.addEventListener("change", renderApus);
-      ["apuMaterialsCost", "apuLaborCost", "apuEquipmentCost", "apuSubcontractCost", "apuWastePercent", "apuUnitPrice"].forEach((id) => {
+      ["apuMaterialsCost", "apuLaborCost", "apuEquipmentCost", "apuSubcontractCost", "apuWastePercent", "apuPerformance", "apuUnitPrice"].forEach((id) => {
         refs[id].addEventListener("input", updateApuPriceHint);
       });
       refs.modalCancel.addEventListener("click", closeModal);
@@ -1880,6 +1925,7 @@
         equipment_cost: apu.equipment_cost,
         subcontract_cost: apu.subcontract_cost,
         waste_percent: apu.waste_percent,
+        performance: apu.performance,
         unit_price: apu.unit_price,
         notes: apu.notes
       });
@@ -1915,7 +1961,7 @@
     function renderApus() {
       if (!refs.apusBody) return;
       if (!currentSession) {
-        refs.apusBody.innerHTML = `<tr><td class="empty-row" colspan="6">Inicia sesión para cargar APUs online.</td></tr>`;
+        refs.apusBody.innerHTML = `<tr><td class="empty-row" colspan="11">Inicia sesión para cargar APUs online.</td></tr>`;
         return;
       }
 
@@ -1928,16 +1974,21 @@
       });
 
       if (visibleApus.length === 0) {
-        refs.apusBody.innerHTML = `<tr><td class="empty-row" colspan="6">No hay APUs para mostrar.</td></tr>`;
+        refs.apusBody.innerHTML = `<tr><td class="empty-row" colspan="11">No hay APUs para mostrar.</td></tr>`;
         return;
       }
 
       refs.apusBody.innerHTML = visibleApus.map((apu) => `
         <tr>
           <td>${escapeHTML(apu.code || "-")}</td>
-          <td>${escapeHTML(apu.category || "-")}</td>
           <td>${escapeHTML(apu.name || "-")}</td>
           <td>${escapeHTML(apu.unit || "-")}</td>
+          <td class="num">${formatCurrency(apu.materials_cost)}</td>
+          <td class="num">${formatCurrency(apu.labor_cost)}</td>
+          <td class="num">${formatCurrency(apu.equipment_cost)}</td>
+          <td class="num">${formatCurrency(apu.subcontract_cost)}</td>
+          <td class="num">${formatNumber(apu.waste_percent)}%</td>
+          <td class="num">${formatNumber(apu.performance || 1)}</td>
           <td class="num"><strong>${formatCurrency(apu.unit_price)}</strong></td>
           <td><button class="btn btn-primary" type="button" data-add-apu-id="${apu.id}">Agregar</button></td>
         </tr>
@@ -1950,6 +2001,8 @@
       const apu = apus.find((item) => item.id === apuId);
       if (!apu) return;
       addItem({
+        codigo: apu.code || "",
+        capitulo: inferChapter(apu.category || "Otros"),
         categoria: apu.category || "Otros",
         descripcion: apu.name || apu.description || "",
         unidad: apu.unit || "",
@@ -1965,7 +2018,8 @@
         + toNumber(refs.apuLaborCost.value)
         + toNumber(refs.apuEquipmentCost.value)
         + toNumber(refs.apuSubcontractCost.value);
-      const calculatedPrice = baseCost * (1 + toNumber(refs.apuWastePercent.value) / 100);
+      const performance = toNumber(refs.apuPerformance.value) || 1;
+      const calculatedPrice = (baseCost * (1 + toNumber(refs.apuWastePercent.value) / 100)) / performance;
       const explicitPrice = toNumber(refs.apuUnitPrice.value);
 
       return {
@@ -1979,6 +2033,7 @@
         equipment_cost: toNumber(refs.apuEquipmentCost.value),
         subcontract_cost: toNumber(refs.apuSubcontractCost.value),
         waste_percent: toNumber(refs.apuWastePercent.value),
+        performance,
         unit_price: explicitPrice || calculatedPrice,
         notes: refs.apuNotes.value.trim()
       };
@@ -1987,7 +2042,7 @@
     function updateApuPriceHint() {
       if (!refs.apuPriceHint) return;
       const apu = getApuFormData();
-      refs.apuPriceHint.textContent = `Precio calculado: ${formatCurrency(apu.unit_price)}`;
+      refs.apuPriceHint.textContent = `Precio unitario final: ${formatCurrency(apu.unit_price)}`;
     }
 
     // Crea un presupuesto limpio con fecha y número automáticos.
@@ -2037,6 +2092,23 @@
         .join("");
     }
 
+    function inferChapter(category = "Otros") {
+      const normalized = normalizeText(category);
+      if (normalized.includes("excav")) return "Movimiento de tierra";
+      if (normalized.includes("hormigon") || normalized.includes("enfierradura") || normalized.includes("moldaje") || normalized.includes("albanileria")) return "Obra gruesa";
+      if (normalized.includes("terminacion")) return "Terminaciones";
+      if (normalized.includes("instalacion")) return "Instalaciones";
+      if (normalized.includes("pintura")) return "Pintura";
+      if (normalized.includes("aseo")) return "Aseo y entrega";
+      if (normalized.includes("preliminar")) return "Obras preliminares";
+      return CHAPTERS.includes(category) ? category : "Otros";
+    }
+
+    function chapterSortIndex(chapter) {
+      const index = CHAPTERS.indexOf(chapter);
+      return index >= 0 ? index : CHAPTERS.length;
+    }
+
     // Renderiza el formulario, las partidas, los totales y la vista imprimible.
     function renderBudget() {
       refs.clientName.value = currentBudget.clientName;
@@ -2059,16 +2131,23 @@
       refs.visibleItemsLabel.textContent = `${visibleItems.length} de ${currentBudget.items.length} partidas`;
 
       if (visibleItems.length === 0) {
-        refs.itemsBody.innerHTML = `<tr><td class="empty-row" colspan="8">No hay partidas para mostrar.</td></tr>`;
+        refs.itemsBody.innerHTML = `<tr><td class="empty-row" colspan="10">No hay partidas para mostrar.</td></tr>`;
         renderTotals();
         return;
       }
 
       refs.itemsBody.innerHTML = visibleItems.map(({ item, index }) => {
         const subtotal = toNumber(item.cantidad) * toNumber(item.precioUnitario);
+        const itemChapter = item.capitulo || inferChapter(item.categoria || "Otros");
         return `
           <tr>
             <td><strong>${index + 1}</strong></td>
+            <td><input data-index="${index}" data-field="codigo" type="text" value="${escapeAttribute(item.codigo || "")}" placeholder="APU-001" /></td>
+            <td>
+              <select data-index="${index}" data-field="capitulo">
+                ${CHAPTERS.map((chapter) => `<option value="${escapeHTML(chapter)}" ${itemChapter === chapter ? "selected" : ""}>${escapeHTML(chapter)}</option>`).join("")}
+              </select>
+            </td>
             <td>
               <select data-index="${index}" data-field="categoria">
                 ${CATEGORIES.map((category) => `<option value="${escapeHTML(category)}" ${item.categoria === category ? "selected" : ""}>${escapeHTML(category)}</option>`).join("")}
@@ -2095,7 +2174,7 @@
         .map((item, index) => ({ item, index }))
         .filter(({ item }) => {
           const matchesCategory = !category || item.categoria === category;
-          const searchable = normalizeText(`${item.categoria} ${item.descripcion} ${item.unidad}`);
+          const searchable = normalizeText(`${item.codigo} ${item.capitulo} ${item.categoria} ${item.descripcion} ${item.unidad}`);
           return matchesCategory && (!term || searchable.includes(term));
         });
     }
@@ -2104,6 +2183,8 @@
     function addItem(item = {}) {
       const normalizedItem = {
         id: item.id || uniqueId(),
+        codigo: item.codigo || item.code || "",
+        capitulo: item.capitulo || item.chapter || inferChapter(item.categoria || item.category || "Otros"),
         categoria: item.categoria || "Otros",
         descripcion: item.descripcion || "",
         unidad: item.unidad || "",
@@ -2176,8 +2257,49 @@
       refs.netSubtotalValue.textContent = formatCurrency(totals.subtotalNeto);
       refs.ivaValue.textContent = formatCurrency(totals.iva);
       refs.finalTotalValue.textContent = formatCurrency(totals.totalFinal);
+      renderChapterSummary();
       renderDashboardStats();
       renderPrintDocument();
+    }
+
+    function renderChapterSummary() {
+      if (!refs.chapterSummaryBody) return;
+      const totals = calculateTotals();
+      const rows = getChapterSummaryRows(totals.costoDirecto)
+        .map((data) => {
+          return `
+            <tr>
+              <td><strong>${escapeHTML(data.chapter)}</strong></td>
+              <td class="num">${data.count}</td>
+              <td class="num">${formatCurrency(data.cost)}</td>
+              <td class="num">${formatNumber(data.percent)}%</td>
+            </tr>
+          `;
+        });
+
+      refs.chapterSummaryBody.innerHTML = rows.length
+        ? rows.join("")
+        : `<tr><td class="empty-row" colspan="4">Agrega partidas para ver el resumen por capítulos.</td></tr>`;
+    }
+
+    function getChapterSummaryRows(directCost = calculateTotals().costoDirecto) {
+      const chapters = currentBudget.items.reduce((summary, item) => {
+        const chapter = item.capitulo || inferChapter(item.categoria || "Otros");
+        const subtotal = toNumber(item.cantidad) * toNumber(item.precioUnitario);
+        if (!summary[chapter]) summary[chapter] = { count: 0, cost: 0 };
+        summary[chapter].count += 1;
+        summary[chapter].cost += subtotal;
+        return summary;
+      }, {});
+
+      return Object.entries(chapters)
+        .sort(([a], [b]) => chapterSortIndex(a) - chapterSortIndex(b))
+        .map(([chapter, data]) => ({
+          chapter,
+          count: data.count,
+          cost: data.cost,
+          percent: directCost > 0 ? (data.cost / directCost) * 100 : 0
+        }));
     }
 
     function renderDashboardStats() {
@@ -2377,6 +2499,8 @@
       const baseItem = priceDatabase[index];
       if (!baseItem) return;
       addItem({
+        codigo: "",
+        capitulo: inferChapter(baseItem.categoria),
         categoria: baseItem.categoria,
         descripcion: baseItem.descripcion,
         unidad: baseItem.unidad,
@@ -2434,9 +2558,11 @@
         ["Ubicación", currentBudget.location],
         ["Fecha", currentBudget.date],
         [],
-        ["Ítem", "Categoría", "Descripción", "Unidad", "Cantidad", "Precio unitario", "Subtotal"],
+        ["Ítem", "Código", "Capítulo", "Categoría", "Descripción", "Unidad", "Cantidad", "Precio unitario", "Subtotal"],
         ...currentBudget.items.map((item, index) => [
           index + 1,
+          item.codigo,
+          item.capitulo || inferChapter(item.categoria),
           item.categoria,
           item.descripcion,
           item.unidad,
@@ -2508,6 +2634,8 @@
         ? currentBudget.items.map((item, index) => `
           <tr>
             <td>${index + 1}</td>
+            <td>${escapeHTML(item.codigo || "-")}</td>
+            <td>${escapeHTML(item.capitulo || inferChapter(item.categoria))}</td>
             <td>${escapeHTML(item.categoria)}</td>
             <td>${escapeHTML(item.descripcion || "-")}</td>
             <td>${escapeHTML(item.unidad || "-")}</td>
@@ -2516,7 +2644,16 @@
             <td class="num">${formatCurrency(toNumber(item.cantidad) * toNumber(item.precioUnitario))}</td>
           </tr>
         `).join("")
-        : `<tr><td colspan="7">Sin partidas registradas.</td></tr>`;
+        : `<tr><td colspan="9">Sin partidas registradas.</td></tr>`;
+      const chapterRows = getChapterSummaryRows(totals.costoDirecto)
+        .map((row) => `
+          <tr>
+            <td>${escapeHTML(row.chapter)}</td>
+            <td class="num">${row.count}</td>
+            <td class="num">${formatCurrency(row.cost)}</td>
+            <td class="num">${formatNumber(row.percent)}%</td>
+          </tr>
+        `).join("");
 
       refs.printDocument.innerHTML = `
         <div class="print-header">
@@ -2543,6 +2680,8 @@
             <thead>
               <tr>
                 <th>Ítem</th>
+                <th>Código</th>
+                <th>Capítulo</th>
                 <th>Categoría</th>
                 <th>Descripción</th>
                 <th>Unidad</th>
@@ -2552,6 +2691,21 @@
               </tr>
             </thead>
             <tbody>${rows}</tbody>
+          </table>
+        </div>
+
+        <div class="print-block">
+          <h2>Resumen por capítulos</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Capítulo</th>
+                <th>Cantidad de partidas</th>
+                <th>Costo directo</th>
+                <th>% sobre total</th>
+              </tr>
+            </thead>
+            <tbody>${chapterRows || `<tr><td colspan="4">Sin capítulos registrados.</td></tr>`}</tbody>
           </table>
         </div>
 
@@ -2607,6 +2761,8 @@
       return {
         budget_id: budgetId,
         user_id: userId,
+        code: item.codigo || null,
+        chapter: item.capitulo || inferChapter(item.categoria || "Otros"),
         category: item.categoria || null,
         description: item.descripcion || null,
         unit: item.unidad || null,
@@ -2630,6 +2786,8 @@
         observations: row.notes || "",
         items: itemRows.map((item) => ({
           id: item.id || uniqueId(),
+          codigo: item.code || "",
+          capitulo: item.chapter || inferChapter(item.category || "Otros"),
           categoria: item.category || "Otros",
           descripcion: item.description || "",
           unidad: item.unit || "",

@@ -12,6 +12,8 @@ Ahora incluye integracion con Supabase para:
 - Editar y volver a guardar presupuestos.
 - Eliminar presupuestos online.
 - Guardar partidas asociadas al presupuesto.
+- Ordenar partidas por codigo, capitulo y categoria.
+- Ver resumen de costos por capitulos.
 - Crear y cargar APUs.
 - Agregar partidas al presupuesto desde APUs.
 - Migrar borradores locales desde `localStorage` a Supabase.
@@ -22,6 +24,7 @@ Ahora incluye integracion con Supabase para:
 index.html
 README.md
 supabase-schema.sql
+supabase-migration-capitulos-apus.sql
 ```
 
 El proyecto sigue siendo compatible con GitHub Pages, Netlify y Vercel porque no requiere servidor propio ni build con Node.js.
@@ -59,6 +62,15 @@ Ese SQL crea:
 - Triggers de `updated_at`.
 - Row Level Security.
 - Politicas de seguridad por usuario autenticado.
+
+Si ya habias ejecutado una version anterior del SQL, ejecuta tambien `supabase-migration-capitulos-apus.sql`.
+Esa migracion agrega:
+
+- `budget_items.code`
+- `budget_items.chapter`
+- `apus.performance`
+
+No modifica RLS ni abre tablas publicamente.
 
 ## Paso 3: activar Auth con correo y contrasena
 
@@ -101,7 +113,7 @@ No pegues claves secretas ni `service_role key`.
 ## Paso 5: publicar en GitHub Pages
 
 1. Crea un repositorio en GitHub.
-2. Sube `index.html`, `README.md` y `supabase-schema.sql`.
+2. Sube `index.html`, `README.md`, `supabase-schema.sql` y `supabase-migration-capitulos-apus.sql`.
 3. En GitHub, entra a `Settings`.
 4. Abre `Pages`.
 5. Selecciona la rama principal, normalmente `main`.
@@ -155,17 +167,17 @@ La seccion `Base de APUs` guarda analisis de precio unitario en Supabase.
 Cada APU puede tener:
 
 - Codigo.
-- Categoria.
 - Nombre.
-- Descripcion.
 - Unidad.
 - Costo de materiales.
 - Costo de mano de obra.
 - Costo de equipos.
 - Costo de subcontratos.
-- Porcentaje de perdida.
-- Precio unitario.
-- Notas.
+- Porcentaje de perdidas.
+- Rendimiento.
+- Precio unitario final.
+
+La app conserva categoria, descripcion y notas como datos complementarios del APU.
 
 Luego puedes agregar un APU al presupuesto como una partida.
 
